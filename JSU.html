@@ -2,25 +2,92 @@
 <html lang="ms">
 <head>
   <meta charset="UTF-8">
-  <title>Aplikasi Jadual Spesifikasi Ujian (JSU)</title>
+  <title>Jadual Spesifikasi Ujian (JSU)</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background: #f9f9f9; }
-    input, textarea, select, button {
-      margin: 5px 0;
-      padding: 8px;
-      width: 100%;
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f7fa;
+      padding: 30px;
     }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-    th { background: #eee; }
-    .topik-row { display: flex; gap: 10px; margin-top: 5px; }
-    .topik-row input { flex: 1; }
-    .btn { margin-top: 10px; }
+    h2, h3 {
+      color: #333;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    input, textarea, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 4px;
+      margin-bottom: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    .btn {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .btn:hover {
+      background-color: #0056b3;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: white;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background: #e9ecef;
+    }
+    .topik-card {
+      background: #fff;
+      border: 1px solid #ddd;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .topik-grid {
+      display: flex;
+      gap: 15px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+    .topik-grid > div {
+      flex: 1;
+      min-width: 150px;
+    }
+    .remove-btn {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      padding: 8px 10px;
+      border-radius: 6px;
+      margin-top: 28px;
+      cursor: pointer;
+    }
+    .remove-btn:hover {
+      background-color: #b02a37;
+    }
+    .action-buttons button {
+      margin-right: 10px;
+    }
   </style>
 </head>
 <body>
 
-  <h2>Aplikasi Jadual Spesifikasi Ujian (JSU)</h2>
+  <h2>Jadual Spesifikasi Ujian (JSU)</h2>
 
   <label>Nama Kursus:</label>
   <input type="text" id="namaKursus">
@@ -43,15 +110,8 @@
   <textarea id="hpk" rows="3"></textarea>
 
   <h3>Bahagian Topik dan Item</h3>
-  <div id="senaraiTopik">
-    <div class="topik-row">
-      <input type="text" placeholder="Nama Topik">
-      <input type="number" placeholder="Bil. Soalan">
-      <input type="number" placeholder="Markah per Soalan">
-      <button onclick="hapusBarisIni(this)">X</button>
-    </div>
-  </div>
-  <button onclick="tambahTopik()">Tambah Topik</button>
+  <div id="senaraiTopik"></div>
+  <button class="btn" onclick="tambahTopik()">+ Tambah Topik</button>
 
   <h3>Peratus Tahap Kesukaran (Jumlah 100%)</h3>
   <label>C1 (Ingat):</label>
@@ -61,11 +121,11 @@
   <label>C3 (Aplikasi):</label>
   <input type="number" id="C3" value="0">
 
-  <div class="btn">
-    <button onclick="janaJSU()">Papar JSU</button>
-    <button onclick="muatTurunWord()">Muat Turun Word</button>
-    <button onclick="muatTurunExcel()">Muat Turun Excel</button>
-    <button onclick="cetakJSU()">Cetak</button>
+  <div class="action-buttons">
+    <button class="btn" onclick="janaJSU()">Papar JSU</button>
+    <button class="btn" onclick="muatTurunWord()">Muat Turun Word</button>
+    <button class="btn" onclick="muatTurunExcel()">Muat Turun Excel</button>
+    <button class="btn" onclick="cetakJSU()">Cetak</button>
   </div>
 
   <div id="output"></div>
@@ -74,19 +134,32 @@
 
   <script>
     function tambahTopik() {
-      const row = document.createElement('div');
-      row.className = 'topik-row';
-      row.innerHTML = `
-        <input type="text" placeholder="Nama Topik">
-        <input type="number" placeholder="Bil. Soalan">
-        <input type="number" placeholder="Markah per Soalan">
-        <button onclick="hapusBarisIni(this)">X</button>
+      const card = document.createElement('div');
+      card.className = 'topik-card';
+      card.innerHTML = `
+        <div class="topik-grid">
+          <div>
+            <label>Nama Topik</label>
+            <input type="text" placeholder="Contoh: Tajuk 1">
+          </div>
+          <div>
+            <label>Bilangan Soalan</label>
+            <input type="number" placeholder="Contoh: 3">
+          </div>
+          <div>
+            <label>Markah/Soalan</label>
+            <input type="number" placeholder="Contoh: 5">
+          </div>
+          <div>
+            <button class="remove-btn" onclick="hapusBarisIni(this)">Buang</button>
+          </div>
+        </div>
       `;
-      document.getElementById('senaraiTopik').appendChild(row);
+      document.getElementById('senaraiTopik').appendChild(card);
     }
 
     function hapusBarisIni(btn) {
-      btn.parentElement.remove();
+      btn.closest('.topik-card').remove();
     }
 
     function janaJSU() {
@@ -95,14 +168,12 @@
       const semester = document.getElementById('semester').value;
       const tahun = document.getElementById('tahunPengajian').value;
       const hpk = document.getElementById('hpk').value;
-
       const C1 = parseInt(document.getElementById('C1').value) || 0;
       const C2 = parseInt(document.getElementById('C2').value) || 0;
       const C3 = parseInt(document.getElementById('C3').value) || 0;
-      const totalKesukaran = C1 + C2 + C3;
 
-      if (totalKesukaran !== 100) {
-        alert("Jumlah peratus kesukaran mesti 100%");
+      if (C1 + C2 + C3 !== 100) {
+        alert("Jumlah peratus tahap kesukaran mestilah 100%");
         return;
       }
 
@@ -113,48 +184,35 @@
       output += `<p><strong>Tahun Pengajian:</strong> ${tahun}</p>`;
       output += `<p><strong>HPK:</strong> ${hpk}</p>`;
 
-      output += `<table>
-        <tr><th>Topik</th><th>Bil. Soalan</th><th>Markah/Soalan</th><th>Jumlah Markah</th></tr>`;
+      output += `<table><tr><th>Topik</th><th>Bil. Soalan</th><th>Markah/Soalan</th><th>Jumlah Markah</th></tr>`;
+      let totalSoalan = 0;
+      let totalMarkah = 0;
 
-      let jumlahSoalan = 0;
-      let jumlahMarkah = 0;
+      document.querySelectorAll("#senaraiTopik .topik-card").forEach(card => {
+        const input = card.querySelectorAll("input");
+        const topik = input[0].value;
+        const bil = parseInt(input[1].value) || 0;
+        const markah = parseInt(input[2].value) || 0;
+        const jumlah = bil * markah;
 
-      document.querySelectorAll("#senaraiTopik .topik-row").forEach(row => {
-        const nama = row.children[0].value;
-        const bil = parseInt(row.children[1].value) || 0;
-        const markah = parseInt(row.children[2].value) || 0;
-        const total = bil * markah;
+        totalSoalan += bil;
+        totalMarkah += jumlah;
 
-        jumlahSoalan += bil;
-        jumlahMarkah += total;
-
-        output += `<tr>
-          <td>${nama}</td>
-          <td>${bil}</td>
-          <td>${markah}</td>
-          <td>${total}</td>
-        </tr>`;
+        output += `<tr><td>${topik}</td><td>${bil}</td><td>${markah}</td><td>${jumlah}</td></tr>`;
       });
 
       output += `<tr style="font-weight:bold">
-        <td>Jumlah</td>
-        <td>${jumlahSoalan}</td>
-        <td>-</td>
-        <td>${jumlahMarkah}</td>
+        <td>Jumlah</td><td>${totalSoalan}</td><td>-</td><td>${totalMarkah}</td>
       </tr>`;
       output += `</table>`;
 
-      output += `<p><strong>Peratusan Tahap Kesukaran:</strong> C1: ${C1}%, C2: ${C2}%, C3: ${C3}%</p>`;
-
+      output += `<p><strong>Peratus Tahap Kesukaran:</strong> C1: ${C1}%, C2: ${C2}%, C3: ${C3}%</p>`;
       document.getElementById('output').innerHTML = output;
     }
 
     function muatTurunWord() {
       const content = document.getElementById("output").innerHTML;
-      const blob = new Blob(
-        [`<html><head><meta charset='utf-8'></head><body>${content}</body></html>`],
-        { type: "application/msword" }
-      );
+      const blob = new Blob([`<html><head><meta charset='utf-8'></head><body>${content}</body></html>`], { type: "application/msword" });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
       link.download = "JSU.doc";
@@ -178,6 +236,9 @@
       const wb = XLSX.utils.table_to_book(table);
       XLSX.writeFile(wb, "JSU.xlsx");
     }
+
+    // Mula dengan satu baris
+    window.onload = tambahTopik;
   </script>
 
 </body>
