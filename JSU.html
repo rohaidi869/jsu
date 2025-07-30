@@ -2,33 +2,22 @@
 <html lang="ms">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Aplikasi JSU</title>
   <style>
     body {
       font-family: sans-serif;
-      background: #f2f2f2;
-      padding: 20px;
-      margin: 0;
+      margin: 20px;
     }
-    .container {
-      max-width: 900px;
-      margin: auto;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-    }
-    h1, h2 {
-      color: #003366;
-    }
-    label {
-      display: block;
-      margin-bottom: 10px;
-    }
-    input, textarea, select {
+    input, textarea, select, button {
+      margin: 5px 0;
+      padding: 5px;
       width: 100%;
-      padding: 6px;
-      margin-top: 4px;
+    }
+    .section {
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 8px;
     }
     table {
       width: 100%;
@@ -36,109 +25,75 @@
       margin-top: 10px;
     }
     th, td {
-      border: 1px solid #ccc;
-      padding: 6px;
-      text-align: left;
+      border: 1px solid #999;
+      padding: 8px;
+      text-align: center;
     }
-    button {
-      margin-top: 10px;
+    .btn {
       margin-right: 10px;
-      padding: 8px 16px;
-      background: #0055aa;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #003d80;
-    }
-    .kesukaran label {
-      display: inline-block;
-      width: 100px;
-    }
-    #output {
-      margin-top: 20px;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Jadual Spesifikasi Ujian (JSU)</h1>
 
-    <section>
-      <h2>Maklumat Kursus</h2>
-      <label>Nama Kursus: <input type="text" id="namaKursus" /></label>
-      <label>Kod Kursus: <input type="text" id="kodKursus" /></label>
-      <label>Semester: <input type="text" id="semester" /></label>
-      <label>Tahun Pengajian: <input type="number" id="tahunPengajian" /></label>
-      <label>Nama Pensyarah: <input type="text" id="namaPensyarah" /></label>
-    </section>
+  <h1>Jadual Spesifikasi Ujian (JSU)</h1>
 
-    <section>
-      <h2>Pernyataan HPK</h2>
-      <textarea id="hpk" rows="3" placeholder="Masukkan penyataan HPK dari RPS"></textarea>
-    </section>
-
-    <section>
-      <h2>Topik dan Item</h2>
-      <table id="topikTable">
-        <thead>
-          <tr>
-            <th>Nama Topik</th>
-            <th>Markah</th>
-            <th>Jenis Item</th>
-            <th>Tindakan</th>
-          </tr>
-        </thead>
-        <tbody id="topikBody"></tbody>
-      </table>
-      <button onclick="tambahTopik()">+ Tambah Topik</button>
-    </section>
-
-    <section>
-      <h2>Peratus Tahap Kesukaran</h2>
-      <div class="kesukaran">
-        <label>C1: <input type="number" id="c1" />%</label>
-        <label>C2: <input type="number" id="c2" />%</label>
-        <label>C3: <input type="number" id="c3" />%</label>
-        <label>C4: <input type="number" id="c4" />%</label>
-        <label>C5: <input type="number" id="c5" />%</label>
-        <label>C6: <input type="number" id="c6" />%</label>
-      </div>
-      <p id="jumlahKesukaran"></p>
-    </section>
-
-    <section class="butang">
-      <button onclick="paparJSU()">Papar JSU</button>
-      <button onclick="resetBorang()">Reset</button>
-      <button onclick="muatTurunExcel()">Muat Turun Excel</button>
-      <button onclick="muatTurunPDF()">Muat Turun PDF</button>
-      <button onclick="muatTurunWord()">Muat Turun Word</button>
-      <button onclick="cetakJSU()">Cetak</button>
-    </section>
-
-    <section>
-      <h2>Jadual Spesifikasi Ujian</h2>
-      <div id="output"></div>
-    </section>
+  <div class="section">
+    <h3>1. Maklumat Kursus</h3>
+    <input id="namaKursus" placeholder="Nama Kursus" />
+    <input id="kodKursus" placeholder="Kod Kursus" />
+    <input id="semester" placeholder="Semester" />
+    <input id="tahun" placeholder="Tahun Pengajian" />
+    <input id="pensyarah" placeholder="Nama Pensyarah" />
   </div>
 
-  <!-- JS Libraries -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <div class="section">
+    <h3>2. Hasil Pembelajaran Kursus (HPK)</h3>
+    <textarea id="hpk" rows="4" placeholder="Salin tampal penyataan HPK dari RPS..."></textarea>
+  </div>
 
+  <div class="section">
+    <h3>3. Topik & Item Soalan</h3>
+    <table id="topikTable">
+      <thead>
+        <tr>
+          <th>Topik</th>
+          <th>Jenis Item</th>
+          <th>Bil. Soalan</th>
+          <th>Markah/Soalan</th>
+          <th>Jumlah Markah</th>
+          <th>Buang</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <button onclick="tambahTopik()">Tambah Topik</button>
+  </div>
+
+  <div class="section">
+    <h3>4. Peratus Tahap Kesukaran (Bloom)</h3>
+    <input id="C1" placeholder="C1 (%)" type="number" />
+    <input id="C2" placeholder="C2 (%)" type="number" />
+    <input id="C3" placeholder="C3 (%)" type="number" />
+    <input id="C4" placeholder="C4 (%)" type="number" />
+    <input id="C5" placeholder="C5 (%)" type="number" />
+    <input id="C6" placeholder="C6 (%)" type="number" />
+  </div>
+
+  <button class="btn" onclick="paparOutput()">Papar JSU</button>
+  <button class="btn" onclick="muatTurunPDF()">PDF</button>
+  <button class="btn" onclick="muatTurunExcel()">Excel</button>
+  <button class="btn" onclick="muatTurunWord()">Word</button>
+  <button class="btn" onclick="cetakJSU()">Cetak</button>
+
+  <div id="output" class="section"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
   <script>
-    window.onload = function () {
-      tambahTopik();
-    };
-
     function tambahTopik() {
-      const tbody = document.getElementById("topikBody");
       const row = document.createElement("tr");
       row.innerHTML = `
-        <td><input type="text" class="topik" /></td>
-        <td><input type="number" class="markah" /></td>
+        <td><input class="topik" /></td>
         <td>
           <select class="item">
             <option>Objektif</option>
@@ -146,89 +101,75 @@
             <option>Esei</option>
           </select>
         </td>
-        <td><button onclick="hapusTopik(this)">Padam</button></td>
+        <td><input class="bilSoalan" type="number" min="1" /></td>
+        <td><input class="markahSoalan" type="number" min="1" /></td>
+        <td class="totalMarkah">0</td>
+        <td><button onclick="this.parentElement.parentElement.remove()">X</button></td>
       `;
-      tbody.appendChild(row);
+      row.querySelector('.bilSoalan').addEventListener("input", kiraMarkah);
+      row.querySelector('.markahSoalan').addEventListener("input", kiraMarkah);
+      document.querySelector("#topikTable tbody").appendChild(row);
     }
 
-    function hapusTopik(button) {
-      const row = button.parentNode.parentNode;
-      row.remove();
+    function kiraMarkah() {
+      const row = this.closest("tr");
+      const bil = parseInt(row.querySelector('.bilSoalan').value) || 0;
+      const markah = parseInt(row.querySelector('.markahSoalan').value) || 0;
+      row.querySelector('.totalMarkah').innerText = bil * markah;
     }
 
-    function paparJSU() {
-      const topik = [...document.querySelectorAll(".topik")].map(i => i.value);
-      const markah = [...document.querySelectorAll(".markah")].map(i => i.value);
-      const item = [...document.querySelectorAll(".item")].map(i => i.value);
-
+    function paparOutput() {
       const output = document.getElementById("output");
-      let html = `<table><thead><tr><th>Topik</th><th>Markah</th><th>Jenis Item</th></tr></thead><tbody>`;
-      for (let i = 0; i < topik.length; i++) {
-        html += `<tr><td>${topik[i]}</td><td>${markah[i]}</td><td>${item[i]}</td></tr>`;
-      }
-      html += `</tbody></table>`;
+      let html = `
+        <h3>Maklumat Kursus</h3>
+        <p><strong>${document.getElementById("namaKursus").value}</strong> (${document.getElementById("kodKursus").value})</p>
+        <p>Semester: ${document.getElementById("semester").value}, Tahun: ${document.getElementById("tahun").value}</p>
+        <p>Pensyarah: ${document.getElementById("pensyarah").value}</p>
 
-      const tahap = ["c1", "c2", "c3", "c4", "c5", "c6"];
-      let jumlah = 0;
-      let kesukaranHTML = `<h3>Peratus Tahap Kesukaran</h3><ul>`;
-      tahap.forEach(id => {
-        const val = parseInt(document.getElementById(id).value) || 0;
-        jumlah += val;
-        kesukaranHTML += `<li>${id.toUpperCase()}: ${val}%</li>`;
+        <h3>Hasil Pembelajaran Kursus (HPK)</h3>
+        <p>${document.getElementById("hpk").value}</p>
+
+        <h3>Jadual Topik & Soalan</h3>
+        <table>
+          <tr><th>Topik</th><th>Jenis Item</th><th>Bil. Soalan</th><th>Markah/Soalan</th><th>Jumlah Markah</th></tr>
+      `;
+
+      document.querySelectorAll("#topikTable tbody tr").forEach(row => {
+        const t = row.querySelector(".topik").value;
+        const i = row.querySelector(".item").value;
+        const b = row.querySelector(".bilSoalan").value;
+        const m = row.querySelector(".markahSoalan").value;
+        const total = row.querySelector(".totalMarkah").innerText;
+        html += `<tr><td>${t}</td><td>${i}</td><td>${b}</td><td>${m}</td><td>${total}</td></tr>`;
       });
-      kesukaranHTML += `</ul>`;
-      document.getElementById("jumlahKesukaran").textContent =
-        "Jumlah: " + jumlah + "%";
 
-      output.innerHTML = html + kesukaranHTML;
-
-      localStorage.setItem("jsuData", JSON.stringify({
-        topik, markah, item,
-        c1: document.getElementById("c1").value,
-        c2: document.getElementById("c2").value,
-        c3: document.getElementById("c3").value,
-        c4: document.getElementById("c4").value,
-        c5: document.getElementById("c5").value,
-        c6: document.getElementById("c6").value
-      }));
-    }
-
-    function resetBorang() {
-      document.getElementById("topikBody").innerHTML = "";
-      tambahTopik();
-      document.getElementById("output").innerHTML = "";
-      document.getElementById("jumlahKesukaran").textContent = "";
-      ["c1", "c2", "c3", "c4", "c5", "c6"].forEach(id => {
-        document.getElementById(id).value = "";
+      html += `</table><h3>Peratus Tahap Kesukaran</h3><ul>`;
+      ["C1", "C2", "C3", "C4", "C5", "C6"].forEach(id => {
+        html += `<li>${id}: ${document.getElementById(id).value}%</li>`;
       });
-      localStorage.clear();
-    }
-
-    function muatTurunExcel() {
-      const table = document.querySelector("#output table");
-      const ws = XLSX.utils.table_to_sheet(table);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "JSU");
-      XLSX.writeFile(wb, "JSU.xlsx");
+      html += "</ul>";
+      output.innerHTML = html;
     }
 
     function muatTurunPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      doc.text("Jadual Spesifikasi Ujian", 10, 10);
-      doc.html(document.getElementById("output"), {
-        callback: function (doc) {
-          doc.save("JSU.pdf");
-        },
-        x: 10,
-        y: 20
-      });
+      const win = window.open("", "", "width=800,height=600");
+      win.document.write(`<html><head><title>PDF</title></head><body>${document.getElementById("output").innerHTML}</body></html>`);
+      win.document.close();
+      win.focus();
+      win.print();
+    }
+
+    function muatTurunExcel() {
+      const table = document.createElement("table");
+      table.innerHTML = document.getElementById("output").querySelector("table").outerHTML;
+      const wb = XLSX.utils.table_to_book(table, { sheet: "JSU" });
+      XLSX.writeFile(wb, "JSU.xlsx");
     }
 
     function muatTurunWord() {
-      const content = document.getElementById("output").innerHTML;
+      const html = document.getElementById("output").innerHTML;
       const blob = new Blob(
-        [`<html><head><meta charset='utf-8'></head><body>${content}</body></html>`],
+        [`<html><head><meta charset='utf-8'></head><body>${html}</body></html>`],
         { type: "application/msword" }
       );
       const link = document.createElement("a");
@@ -240,16 +181,13 @@
     }
 
     function cetakJSU() {
-      const win = window.open("", "", "width=800,height=600");
-      win.document.write("<html><head><title>JSU</title></head><body>");
-      win.document.write("<h1>Jadual Spesifikasi Ujian</h1>");
-      win.document.write(document.getElementById("output").innerHTML);
-      win.document.write("</body></html>");
-      win.document.close();
-      win.focus();
-      win.print();
-      win.close();
+      const printWin = window.open("", "", "width=800,height=600");
+      printWin.document.write(`<html><head><title>Cetak JSU</title></head><body>${document.getElementById("output").innerHTML}</body></html>`);
+      printWin.document.close();
+      printWin.focus();
+      printWin.print();
     }
   </script>
+
 </body>
 </html>
