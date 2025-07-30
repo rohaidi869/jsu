@@ -233,6 +233,588 @@
     .kesukaran-display div {
       margin: 4px 0;
     }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>📘 Jadual Spesifikasi Ujian (JSU)</h1>
+    </header>
+
+    <div class="content">
+      <!-- Maklumat Kursus -->
+      <div class="section">
+        <h2>📝 Maklumat Kursus</h2>
+        <label>Nama Kursus</label>
+        <input type="text" id="namaKursus" placeholder="Contoh: Asas Pemrograman" />
+
+        <label>Kod Kursus</label>
+        <input type="text" id="kodKursus" placeholder="Contoh: CSC101" />
+
+        <label>Semester</label>
+        <input type="text" id="semester" placeholder="Contoh: Semester 1" />
+
+        <label>Tahun Pengajian</label>
+        <select id="tahunPengajian">
+          <option value="">Pilih Tahun</option>
+          <option value="1">Tahun 1</option>
+          <option value="2">Tahun 2</option>
+          <option value="3">Tahun 3</option>
+          <option value="4">Tahun 4</option>
+        </select>
+
+        <label>Penyataan HPK</label>
+        <textarea id="hpk" rows="3" placeholder="Contoh: Murid dapat mengenal pasti struktur asas HTML."></textarea>
+      </div>
+
+      <!-- Topik dan Item -->
+      <div class="section">
+        <h2>📌 Topik dan Item Soalan</h2>
+        <div id="senaraiTopik"></div>
+        <button class="btn btn-primary btn-sm" onclick="tambahTopik()">➕ Tambah Topik</button>
+
+        <!-- Paparan Total Soalan & Markah -->
+        <div class="totals-display">
+          <div>Total Soalan: <span id="totalSoalan">0</span></div>
+          <div>Total Markah: <span id="totalMarkah">0</span></div>
+        </div>
+      </div>
+
+      <!-- Peratus Tahap Kesukaran (Auto-Kira Berdasarkan MARKAH) -->
+      <div class="section">
+        <h2>📊 Peratus Tahap Kesukaran (Auto-Kira)</h2>
+        <p style="font-size: 14px; color: #555;">
+          Peratus dikira secara automatik berdasarkan <strong>jumlah markah</strong> mengikut tahap kesukaran.
+        </p>
+
+        <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 10px;">
+          <div style="flex: 1; min-width: 140px;">
+            <label>Rendah</label>
+            <input type="number" id="rendahPeratus" value="0" readonly />
+          </div>
+          <div style="flex: 1; min-width: 140px;">
+            <label>Sederhana</label>
+            <input type="number" id="sederhanaPeratus" value="0" readonly />
+          </div>
+          <div style="flex: 1; min-width: 140px;">
+            <label>Tinggi</label>
+            <input type="number" id="tinggiPeratus" value="0" readonly />
+          </div>
+        </div>
+
+        <!-- Paparan jumlah markah mengikut tahap -->
+        <div class="kesukaran-display">
+          <strong>Distribusi Markah:</strong>
+          <div id="kesukaranInfo">Belum ada topik ditambah.</div>
+        </div>
+      </div>
+
+      <!-- Butang Aksi -->
+      <div class="action-buttons">
+        <button class="btn btn-primary" onclick="janaJSU()">👁️ Papar JSU</button>
+        <button class="btn btn-success" onclick="muatTurunWord()">📥 Muat Turun Word</button>
+        <button class="btn btn-success" onclick="muatTurunExcel()">📊 Muat Turun Excel</button>
+        <button class="btn btn-primary" onclick="cetakJSU()">🖨️ Cetak</button>
+      </div>
+
+      <!-- Output -->
+      <div id="output"></div>
+    </div>
+  </div>
+
+  <!-- Excel Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <script>
+    function tambahTopik() {
+      const card = document.createElement('div');
+      card.className = 'topik-card';
+      card.innerHTML = `
+        <div class="topik-grid">
+          <div>
+            <label>Topik</label>
+            <input type="text" placeholder="Contoh: HTML Asas" required />
+          </div>
+          <div>
+            <label>Bentuk Soalan</label>
+            <select onchange="kiraStatistik()">
+              <option value="Objektif">Objektif</option>
+              <option value="Struktur">Struktur</option>
+              <option value="Esei">Esei</option>
+            </select>
+          </div>
+          <div>
+            <label>Bil. Soalan</label>
+            <input type="number" min="1" placeholder="3" oninput="kiraStatistik()" />
+          </div>
+          <div>
+            <label>Markah/Soalan</label>
+            <input type="number" min="1" placeholder="5" oninput="kiraStatistik()" />
+          </div>
+          <div>
+            <label>Tahap Kesukaran</label>
+            <select onchange="kiraStatistik()">
+              <option value="Rendah">Rendah</option>
+              <option value="Sederhana">Sederhana</option>
+              <option value="Tinggi">Tinggi</option>
+            </select>
+          </div>
+          <div>
+            <button class="remove-btn" onclick="hapusBarisIni(this)">✕ Buang</button>
+          </div>
+        </div>
+      `;
+      document.getElementById('senaraiTopik').appendChild(card);
+      setTimeout(kiraStatistik, 10);
+    }
+
+    function hapusBarisIni(btn) {
+      btn.closest('.topik-card').remove();
+      kiraStatistik();
+    }
+
+    // Kira total & peratus berdasarkan MARKAH
+    function kiraStatistik() {
+      let totalSoalan = 0;
+      let totalMarkah = 0;
+      let markahByLevel = { Rendah: 0, Sederhana: 0, Tinggi: 0 };
+
+      document.querySelectorAll("#senaraiTopik .topik-card").forEach(card => {
+        const inputs = card.querySelectorAll("input, select");
+        const topik = inputs[0].value.trim();
+        const bil = parseInt(inputs[2].value) || 0;
+        const markahPerSoalan = parseInt(inputs[3].value) || 0;
+        const tahap = inputs[4].value;
+
+        if (!topik || bil <= 0 || markahPerSoalan <= 0) return;
+
+        const jumlahMarkah = bil * markahPerSoalan;
+        totalSoalan += bil;
+        totalMarkah += jumlahMarkah;
+        markahByLevel[tahap] += jumlahMarkah;
+      });
+
+      // Papar total
+      document.getElementById("totalSoalan").textContent = totalSoalan;
+      document.getElementById("totalMarkah").textContent = totalMarkah;
+
+      // Kira peratus berdasarkan markah
+      const rendahPeratus = totalMarkah ? Math.round((markahByLevel.Rendah / totalMarkah) * 100) : 0;
+      const sederhanaPeratus = totalMarkah ? Math.round((markahByLevel.Sederhana / totalMarkah) * 100) : 0;
+      const tinggiPeratus = totalMarkah ? Math.round((markahByLevel.Tinggi / totalMarkah) * 100) : 0;
+
+      // Papar dalam input
+      document.getElementById("rendahPeratus").value = rendahPeratus;
+      document.getElementById("sederhanaPeratus").value = sederhanaPeratus;
+      document.getElementById("tinggiPeratus").value = tinggiPeratus;
+
+      // Papar info
+      const info = document.getElementById("kesukaranInfo");
+      if (totalMarkah === 0) {
+        info.innerHTML = "Belum ada topik ditambah.";
+      } else {
+        info.innerHTML = `
+          🔹 Rendah: ${markahByLevel.Rendah} markah (${rendahPeratus}%)<br>
+          🔹 Sederhana: ${markahByLevel.Sederhana} markah (${sederhanaPeratus}%)<br>
+          🔹 Tinggi: ${markahByLevel.Tinggi} markah (${tinggiPeratus}%)
+        `;
+      }
+    }
+
+    function janaJSU() {
+      const namaKursus = document.getElementById('namaKursus').value.trim();
+      const kodKursus = document.getElementById('kodKursus').value.trim();
+      const semester = document.getElementById('semester').value.trim();
+      const tahun = document.getElementById('tahunPengajian').value;
+      const hpk = document.getElementById('hpk').value.trim();
+
+      if (!namaKursus || !kodKursus || !semester || !tahun || !hpk) {
+        alert("Sila lengkapkan semua maklumat kursus.");
+        return;
+      }
+
+      const topikInputs = document.querySelectorAll("#senaraiTopik .topik-card");
+      if (topikInputs.length === 0) {
+        alert("Sila tambah sekurang-kurangnya satu topik.");
+        return;
+      }
+
+      let output = `
+        <h3 style="color: #2c7be5;">📘 Jadual Spesifikasi Ujian</h3>
+        <p><strong>Nama Kursus:</strong> ${namaKursus}</p>
+        <p><strong>Kod Kursus:</strong> ${kodKursus}</p>
+        <p><strong>Semester:</strong> ${semester}</p>
+        <p><strong>Tahun Pengajian:</strong> Tahun ${tahun}</p>
+        <p><strong>HPK:</strong> "${hpk}"</p>
+      `;
+
+      output += `
+        <table>
+          <tr>
+            <th>Topik</th>
+            <th>Bentuk Soalan</th>
+            <th>Bil. Soalan</th>
+            <th>Markah/Soalan</th>
+            <th>Tahap Kesukaran</th>
+            <th>Jumlah Markah</th>
+          </tr>
+      `;
+
+      let totalSoalan = 0;
+      let totalMarkah = 0;
+
+      topikInputs.forEach(card => {
+        const inputs = card.querySelectorAll("input, select");
+        const topik = inputs[0].value.trim();
+        const bentuk = inputs[1].value;
+        const bil = parseInt(inputs[2].value) || 0;
+        const markah = parseInt(inputs[3].value) || 0;
+        const kesukaran = inputs[4].value;
+        const jumlah = bil * markah;
+
+        if (!topik || bil <= 0 || markah <= 0) {
+          alert("Sila isi topik, bilangan soalan, dan markah dengan betul.");
+          throw new Error("Input tidak sah");
+        }
+
+        totalSoalan += bil;
+        totalMarkah += jumlah;
+
+        output += `
+          <tr>
+            <td style="text-align: left;">${topik}</td>
+            <td>${bentuk}</td>
+            <td>${bil}</td>
+            <td>${markah}</td>
+            <td>${kesukaran}</td>
+            <td>${jumlah}</td>
+          </tr>
+        `;
+      });
+
+      output += `
+        <tr style="font-weight: bold; background-color: #f1f3f6;">
+          <td colspan="2">Jumlah</td>
+          <td>${totalSoalan}</td>
+          <td>-</td>
+          <td>-</td>
+          <td>${totalMarkah}</td>
+        </tr>
+      </table>
+      `;
+
+      // Ambil peratus berdasarkan markah
+      const rendah = document.getElementById("rendahPeratus").value;
+      const sederhana = document.getElementById("sederhanaPeratus").value;
+      const tinggi = document.getElementById("tinggiPeratus").value;
+
+      output += `
+        <p><strong>Peratus Tahap Kesukaran (mengikut markah):</strong> 
+          Rendah: ${rendah}%, 
+          Sederhana: ${sederhana}%, 
+          Tinggi: ${tinggi}%
+        </p>
+      `;
+
+      document.getElementById('output').innerHTML = output;
+    }
+
+    function muatTurunWord() {
+      const output = document.getElementById('output').innerHTML;
+      const html = `
+        <html>
+          <head>
+            <meta charset="utf-8"/>
+            <title>JSU</title>
+            <style>
+              body { font-family: 'Segoe UI', sans-serif; }
+              table { border-collapse: collapse; width: 100%; }
+              th, td { border: 1px solid #000; padding: 8px; text-align: center; }
+              th { background-color: #e9ecef; }
+            </style>
+          </head>
+          <body>${output}</body>
+        </html>
+      `;
+      const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `JSU_${kodKursus.value || 'Dokumen'}.doc`;
+      link.click();
+    }
+
+    function muatTurunExcel() {
+      const table = document.querySelector("#output table");
+      if (!table) return alert("Tiada jadual untuk dimuat turun.");
+      const wb = XLSX.utils.table_to_book(table, { sheet: "Topik" });
+      XLSX.writeFile(wb, `JSU_${kodKursus.value || 'Dokumen'}.xlsx`);
+    }
+
+    function cetakJSU() {
+      const output = document.getElementById('output').innerHTML;
+      const win = window.open('', '', 'width=900,height=700');
+      win.document.write(`
+        <html>
+          <head>
+            <title>JSU - Cetak</title>
+            <style>
+              body { font-family: Arial, sans-serif; padding: 20px; }
+              table { border-collapse: collapse; width: 100%; }
+              th, td { border: 1px solid #000; padding: 8px; text-align: center; }
+            </style>
+          </head>
+          <body>${output}</body>
+        </html>
+      `);
+      win.document.close();
+      win.focus();
+      win.print();
+      win.close();
+    }
+
+    // Auto-kira pada mula
+    window.onload = function () {
+      tambahTopik();
+      kiraStatistik();
+    };
+  </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Jadual Spesifikasi Ujian (JSU)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #2c7be5;
+      --primary-dark: #1a68d1;
+      --danger: #e63946;
+      --success: #28a745;
+      --gray: #6c757d;
+      --dark: #343a40;
+      --light: #f8f9fa;
+      --border: #dee2e6;
+      --shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f1f3f6;
+      color: var(--dark);
+      line-height: 1.6;
+      padding: 20px;
+      margin: 0;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    header {
+      background: var(--primary);
+      color: white;
+      padding: 25px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      font-weight: 700;
+      font-family: 'Nunito', sans-serif;
+    }
+
+    .content {
+      padding: 30px;
+    }
+
+    .section {
+      margin-bottom: 30px;
+    }
+
+    h2 {
+      color: var(--primary);
+      font-weight: 600;
+      border-bottom: 2px solid #e9ecef;
+      padding-bottom: 8px;
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-top: 12px;
+      font-weight: 500;
+      color: var(--dark);
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 10px 12px;
+      margin-top: 6px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border 0.3s ease;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(44, 123, 229, 0.2);
+    }
+
+    .btn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-dark);
+    }
+
+    .btn-danger {
+      background-color: var(--danger);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background-color: #c82333;
+    }
+
+    .btn-success {
+      background-color: var(--success);
+      color: white;
+    }
+
+    .btn-success:hover {
+      background-color: #218838;
+    }
+
+    .btn-sm {
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+
+    .action-buttons {
+      margin-top: 25px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .action-buttons .btn {
+      flex: 1;
+      min-width: 130px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      font-size: 14px;
+    }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 10px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #f1f3f6;
+      color: var(--dark);
+      font-weight: 600;
+    }
+
+    tr:nth-child(even) {
+      background-color: #fafbfc;
+    }
+
+    .topik-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      transition: transform 0.2s ease;
+    }
+
+    .topik-grid {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .topik-grid > div {
+      flex: 1;
+      min-width: 130px;
+    }
+
+    .remove-btn {
+      background-color: var(--danger);
+      color: white;
+      border: none;
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .remove-btn:hover {
+      background-color: #c82333;
+    }
+
+    .totals-display {
+      margin-top: 15px;
+      padding: 12px;
+      background: #e3f0ff;
+      color: var(--primary);
+      font-weight: 600;
+      border-radius: 8px;
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .kesukaran-display {
+      margin-top: 15px;
+      padding: 12px;
+      background: #f8f9fa;
+      border-left: 4px solid var(--primary);
+      font-size: 14px;
+    }
+
+    .kesukaran-display div {
+      margin: 4px 0;
+    }
 
     @media (max-width: 768px) {
       .topik-grid, .totals-display {
