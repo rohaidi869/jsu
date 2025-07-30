@@ -224,10 +224,12 @@
   </style>
 </head>
 <body>
+
   <div class="container">
     <header>
       <!-- Logo Kolej -->
       <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRT2c9MkwQOnCwNRy5xBVmuvdK_nSQmmWGcVDRKIWB-k8pWfI4zjUJVfYcLsr4NXpc99FM&usqp=CAU" alt="Logo KIAS" />
+
       <!-- Maklumat Institusi -->
       <div>
         <p style="font-size: 16px; font-weight: 500;">
@@ -239,6 +241,7 @@
         </p>
       </div>
     </header>
+
     <div class="content">
       <!-- Maklumat Kursus -->
       <div class="section">
@@ -284,6 +287,7 @@
         <p style="font-size: 14px; color: #555;">
           Peratus dikira secara automatik berdasarkan <strong>jumlah markah</strong> mengikut tahap kesukaran.
         </p>
+
         <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 10px;">
           <div style="flex: 1; min-width: 140px;">
             <label>Rendah</label>
@@ -531,6 +535,21 @@
             <p>Tarikh: _________________________</p>
           </div>
         </div>
+      `;
+
+      // Tambahkan logo dan alamat untuk muat turun/cetak
+      output = `
+        <div style="text-align: center;">
+          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRT2c9MkwQOnCwNRy5xBVmuvdK_nSQmmWGcVDRKIWB-k8pWfI4zjUJVfYcLsr4NXpc99FM&usqp=CAU" alt="Logo KIAS" style="max-width: 100px; height: auto;" />
+          <p style="font-size: 14px; color: #555; margin: 10px 0;">
+            KOLEJ UNIVERSITI ISLAM ANTARABANGSA SULTAN ISMAIL PETRA (KIAS)<br>
+            SULTAN ISMAIL PETRA INTERNATIONAL ISLAMIC UNIVERSITY COLLEGE<br>
+            KM 12, Jalan Kuala Krai, Peti Surat 68, Nilam Puri, 15730 Kota Bharu, Kelantan Darulnaim.<br>
+            Tel: 609 - 712 9386 / 712 9387 Fax: 609 - 712 9444 / 712 6100<br>
+            Email: admin@kias.edu.my Website: www.kias.edu.my IPTS: DKU045(D)
+          </p>
+        </div>
+        ${output}
       `;
 
       document.getElementById('output').innerHTML = output;
