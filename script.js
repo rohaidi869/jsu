@@ -86,6 +86,20 @@ function muatTurunExcel() {
   XLSX.writeFile(wb, "JSU.xlsx");
 }
 
+function muatTurunWord() {
+  const content = document.getElementById("output").innerHTML;
+  const blob = new Blob(
+    [`<html><head><meta charset='utf-8'></head><body>${content}</body></html>`],
+    { type: "application/msword" }
+  );
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "JSU.doc";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
 function muatTurunPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
