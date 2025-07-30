@@ -11,7 +11,6 @@
       --primary-dark: #1a68d1;
       --danger: #e63946;
       --success: #28a745;
-      --warning: #ffc107;
       --gray: #6c757d;
       --dark: #343a40;
       --light: #f8f9fa;
@@ -184,10 +183,6 @@
       transition: transform 0.2s ease;
     }
 
-    .topik-card:hover {
-      transform: translateY(-2px);
-    }
-
     .topik-grid {
       display: flex;
       gap: 12px;
@@ -214,34 +209,33 @@
       background-color: #c82333;
     }
 
-    .summary-box {
-      margin: 15px 0;
+    .totals-display {
+      margin-top: 15px;
+      padding: 12px;
+      background: #e3f0ff;
+      color: var(--primary);
+      font-weight: 600;
+      border-radius: 8px;
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .kesukaran-display {
+      margin-top: 15px;
       padding: 12px;
       background: #f8f9fa;
       border-left: 4px solid var(--primary);
       font-size: 14px;
     }
 
-    .totals-display {
-      display: flex;
-      gap: 20px;
-      margin-top: 10px;
-      font-size: 14px;
-      color: var(--primary);
-      font-weight: 600;
-    }
-
-    .totals-display div {
-      background: #e3f0ff;
-      padding: 8px 12px;
-      border-radius: 6px;
+    .kesukaran-display div {
+      margin: 4px 0;
     }
 
     @media (max-width: 768px) {
-      .topik-grid {
-        flex-direction: column;
-      }
-      .totals-display {
+      .topik-grid, .totals-display {
         flex-direction: column;
       }
       .action-buttons {
@@ -289,36 +283,39 @@
         <div id="senaraiTopik"></div>
         <button class="btn btn-primary btn-sm" onclick="tambahTopik()">➕ Tambah Topik</button>
 
-        <!-- Paparan Total Langsung -->
-        <div class="totals-display" id="totalDisplay">
+        <!-- Paparan Total Soalan & Markah -->
+        <div class="totals-display">
           <div>Total Soalan: <span id="totalSoalan">0</span></div>
           <div>Total Markah: <span id="totalMarkah">0</span></div>
         </div>
       </div>
 
-      <!-- Tahap Kesukaran (dikemaskini) -->
+      <!-- Peratus Tahap Kesukaran (Auto-Kira) -->
       <div class="section">
-        <h2>📊 Peratus Tahap Kesukaran (Jumlah 100%)</h2>
-        <p style="font-size: 13px; color: #6c757d;">
-          Jumlah soalan mengikut tahap kesukaran dari topik-topik di atas:
+        <h2>📊 Peratus Tahap Kesukaran (Auto-Kira)</h2>
+        <p style="font-size: 14px; color: #555;">
+          Peratus dikira secara automatik berdasarkan tahap kesukaran yang dipilih pada setiap topik.
         </p>
 
-        <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 8px;">
+        <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 10px;">
           <div style="flex: 1; min-width: 140px;">
             <label>Rendah</label>
-            <input type="number" id="rendahPeratus" value="0" min="0" max="100" placeholder="%" />
-            <small id="totalRendah">0 soalan</small>
+            <input type="number" id="rendahPeratus" value="0" readonly />
           </div>
           <div style="flex: 1; min-width: 140px;">
             <label>Sederhana</label>
-            <input type="number" id="sederhanaPeratus" value="0" min="0" max="100" placeholder="%" />
-            <small id="totalSederhana">0 soalan</small>
+            <input type="number" id="sederhanaPeratus" value="0" readonly />
           </div>
           <div style="flex: 1; min-width: 140px;">
             <label>Tinggi</label>
-            <input type="number" id="tinggiPeratus" value="0" min="0" max="100" placeholder="%" />
-            <small id="totalTinggi">0 soalan</small>
+            <input type="number" id="tinggiPeratus" value="0" readonly />
           </div>
+        </div>
+
+        <!-- Paparan jumlah soalan mengikut tahap -->
+        <div class="kesukaran-display">
+          <strong>Distribusi Soalan:</strong>
+          <div id="kesukaranInfo">Belum ada topik ditambah.</div>
         </div>
       </div>
 
@@ -339,35 +336,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <script>
-    // Fungsi untuk kira jumlah soalan & markah
-    function kiraTotal() {
-      let totalSoalan = 0;
-      let totalMarkah = 0;
-      let kesukaranCount = { Rendah: 0, Sederhana: 0, Tinggi: 0 };
-
-      document.querySelectorAll("#senaraiTopik .topik-card").forEach(card => {
-        const inputs = card.querySelectorAll("input, select");
-        const bil = parseInt(inputs[2].value) || 0;
-        const markah = parseInt(inputs[3].value) || 0;
-        const kesukaran = inputs[4].value;
-
-        totalSoalan += bil;
-        totalMarkah += bil * markah;
-        kesukaranCount[kesukaran] += bil;
-      });
-
-      // Papar total
-      document.getElementById("totalSoalan").textContent = totalSoalan;
-      document.getElementById("totalMarkah").textContent = totalMarkah;
-
-      // Papar jumlah soalan mengikut tahap
-      document.getElementById("totalRendah").textContent = `${kesukaranCount.Rendah} soalan`;
-      document.getElementById("totalSederhana").textContent = `${kesukaranCount.Sederhana} soalan`;
-      document.getElementById("totalTinggi").textContent = `${kesukaranCount.Tinggi} soalan`;
-
-      return { totalSoalan, kesukaranCount };
-    }
-
     function tambahTopik() {
       const card = document.createElement('div');
       card.className = 'topik-card';
@@ -379,7 +347,7 @@
           </div>
           <div>
             <label>Bentuk Soalan</label>
-            <select onchange="kiraTotal()">
+            <select onchange="kiraStatistik()">
               <option value="Objektif">Objektif</option>
               <option value="Struktur">Struktur</option>
               <option value="Esei">Esei</option>
@@ -387,15 +355,15 @@
           </div>
           <div>
             <label>Bil. Soalan</label>
-            <input type="number" min="1" placeholder="3" oninput="kiraTotal()" />
+            <input type="number" min="1" placeholder="3" oninput="kiraStatistik()" />
           </div>
           <div>
             <label>Markah/Soalan</label>
-            <input type="number" min="1" placeholder="5" oninput="kiraTotal()" />
+            <input type="number" min="1" placeholder="5" oninput="kiraStatistik()" />
           </div>
           <div>
             <label>Tahap Kesukaran</label>
-            <select onchange="kiraTotal()">
+            <select onchange="kiraStatistik()">
               <option value="Rendah">Rendah</option>
               <option value="Sederhana">Sederhana</option>
               <option value="Tinggi">Tinggi</option>
@@ -407,12 +375,56 @@
         </div>
       `;
       document.getElementById('senaraiTopik').appendChild(card);
-      setTimeout(kiraTotal, 10); // Update total selepas render
+      setTimeout(kiraStatistik, 10);
     }
 
     function hapusBarisIni(btn) {
       btn.closest('.topik-card').remove();
-      kiraTotal();
+      kiraStatistik();
+    }
+
+    // Kira total & peratus kesukaran
+    function kiraStatistik() {
+      let totalSoalan = 0;
+      let totalMarkah = 0;
+      let count = { Rendah: 0, Sederhana: 0, Tinggi: 0 };
+
+      document.querySelectorAll("#senaraiTopik .topik-card").forEach(card => {
+        const inputs = card.querySelectorAll("input, select");
+        const bil = parseInt(inputs[2].value) || 0;
+        const markah = parseInt(inputs[3].value) || 0;
+        const kesukaran = inputs[4].value;
+
+        totalSoalan += bil;
+        totalMarkah += bil * markah;
+        count[kesukaran] += bil;
+      });
+
+      // Papar total
+      document.getElementById("totalSoalan").textContent = totalSoalan;
+      document.getElementById("totalMarkah").textContent = totalMarkah;
+
+      // Kira peratus
+      const rendahPeratus = totalSoalan ? Math.round((count.Rendah / totalSoalan) * 100) : 0;
+      const sederhanaPeratus = totalSoalan ? Math.round((count.Sederhana / totalSoalan) * 100) : 0;
+      const tinggiPeratus = totalSoalan ? Math.round((count.Tinggi / totalSoalan) * 100) : 0;
+
+      // Papar dalam input
+      document.getElementById("rendahPeratus").value = rendahPeratus;
+      document.getElementById("sederhanaPeratus").value = sederhanaPeratus;
+      document.getElementById("tinggiPeratus").value = tinggiPeratus;
+
+      // Papar info
+      const info = document.getElementById("kesukaranInfo");
+      if (totalSoalan === 0) {
+        info.innerHTML = "Belum ada topik ditambah.";
+      } else {
+        info.innerHTML = `
+          🔹 Rendah: ${count.Rendah} soalan (${rendahPeratus}%)<br>
+          🔹 Sederhana: ${count.Sederhana} soalan (${sederhanaPeratus}%)<br>
+          🔹 Tinggi: ${count.Tinggi} soalan (${tinggiPeratus}%)
+        `;
+      }
     }
 
     function janaJSU() {
@@ -422,17 +434,8 @@
       const tahun = document.getElementById('tahunPengajian').value;
       const hpk = document.getElementById('hpk').value.trim();
 
-      const rendah = parseInt(document.getElementById('rendahPeratus').value) || 0;
-      const sederhana = parseInt(document.getElementById('sederhanaPeratus').value) || 0;
-      const tinggi = parseInt(document.getElementById('tinggiPeratus').value) || 0;
-
       if (!namaKursus || !kodKursus || !semester || !tahun || !hpk) {
         alert("Sila lengkapkan semua maklumat kursus.");
-        return;
-      }
-
-      if (rendah + sederhana + tinggi !== 100) {
-        alert("Jumlah peratus tahap kesukaran mesti 100%.");
         return;
       }
 
@@ -503,21 +506,16 @@
           <td>-</td>
           <td>${totalMarkah}</td>
         </tr>
-      </table>`;
-
-      // Ringkasan tahap kesukaran
-      const { kesukaranCount } = kiraTotal();
-      output += `
-        <div class="summary-box">
-          <strong>Distribusi Soalan:</strong><br>
-          🔹 Rendah: ${kesukaranCount.Rendah} soalan<br>
-          🔹 Sederhana: ${kesukaranCount.Sederhana} soalan<br>
-          🔹 Tinggi: ${kesukaranCount.Tinggi} soalan
-        </div>
+      </table>
       `;
 
+      // Ambil nilai peratus dari paparan auto
+      const rendah = document.getElementById("rendahPeratus").value;
+      const sederhana = document.getElementById("sederhanaPeratus").value;
+      const tinggi = document.getElementById("tinggiPeratus").value;
+
       output += `
-        <p><strong>Peratusan Tahap Kesukaran:</strong> 
+        <p><strong>Peratus Tahap Kesukaran:</strong> 
           Rendah: ${rendah}%, 
           Sederhana: ${sederhana}%, 
           Tinggi: ${tinggi}%
@@ -539,7 +537,6 @@
               table { border-collapse: collapse; width: 100%; }
               th, td { border: 1px solid #000; padding: 8px; text-align: center; }
               th { background-color: #e9ecef; }
-              .summary-box { margin: 15px 0; padding: 10px; background: #f8f9fa; }
             </style>
           </head>
           <body>${output}</body>
@@ -570,7 +567,6 @@
               body { font-family: Arial, sans-serif; padding: 20px; }
               table { border-collapse: collapse; width: 100%; }
               th, td { border: 1px solid #000; padding: 8px; text-align: center; }
-              .summary-box { margin: 15px 0; padding: 10px; background: #f8f9fa; }
             </style>
           </head>
           <body>${output}</body>
@@ -582,10 +578,10 @@
       win.close();
     }
 
-    // Auto-kira pada muat
+    // Auto-kira pada mula
     window.onload = function () {
       tambahTopik();
-      kiraTotal(); // Pastikan kira pada mula
+      kiraStatistik();
     };
   </script>
 </body>
