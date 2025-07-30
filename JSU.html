@@ -43,12 +43,14 @@
     header {
       background: white;
       padding: 25px;
-      text-align: center;
+      display: flex;
+      align-items: center;
+      gap: 20px;
       border-bottom: 1px solid var(--border);
     }
 
     header img {
-      max-width: 100%;
+      max-width: 100px;
       height: auto;
     }
 
@@ -238,6 +240,22 @@
     .kesukaran-display div {
       margin: 4px 0;
     }
+
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        align-items: start;
+      }
+      header img {
+        margin-bottom: 10px;
+      }
+      .topik-grid, .totals-display {
+        flex-direction: column;
+      }
+      .action-buttons {
+        flex-direction: column;
+      }
+    }
   </style>
 </head>
 <body>
@@ -245,16 +263,18 @@
   <div class="container">
     <header>
       <!-- Logo Kolej -->
-      <img src="https://example.com/logo-kias.png" alt="Logo Kolej Universiti Islam Antarabangsa Sultan Ismail Petra" style="max-width: 100%; height: auto;" />
+      <img src="https://images.app.goo.gl/554X8YbjSsNRUGf7A" alt="Logo Kolej Universiti Islam Antarabangsa Sultan Ismail Petra" style="max-width: 100px; height: auto;" />
 
       <!-- Maklumat Institusi -->
-      <p style="font-size: 14px; color: #333;">
-        <strong>KOLEJ UNIVERSITI ISLAM ANTARABANGSA SULTAN ISMAIL PETRA (KIAS)</strong><br>
-        SULTAN ISMAIL PETRA INTERNATIONAL ISLAMIC UNIVERSITY COLLEGE<br>
-        KM 12, Jalan Kuala Krai, Peti Surat 68, Nilam Puri, 15730 Kota Bharu, Kelantan Darulnaim.<br>
-        Tel: 609 - 712 9386 / 712 9387 &nbsp;&bull;&nbsp; Fax: 609 - 712 9444 / 712 6100<br>
-        Email: admin@kias.edu.my &nbsp;&bull;&nbsp; Website: www.kias.edu.my &nbsp;&bull;&nbsp; IPTS: DKU045(D)
-      </p>
+      <div>
+        <p style="font-size: 16px; font-weight: 500;">
+          KOLEJ UNIVERSITI ISLAM ANTARABANGSA SULTAN ISMAIL PETRA (KIAS)<br>
+          SULTAN ISMAIL PETRA INTERNATIONAL ISLAMIC UNIVERSITY COLLEGE<br>
+          KM 12, Jalan Kuala Krai, Peti Surat 68, Nilam Puri, 15730 Kota Bharu, Kelantan Darulnaim.<br>
+          Tel: 609 - 712 9386 / 712 9387 Fax: 609 - 712 9444 / 712 6100<br>
+          Email: admin@kias.edu.my Website: www.kias.edu.my IPTS: DKU045(D)
+        </p>
+      </div>
     </header>
 
     <div class="content">
