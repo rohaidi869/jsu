@@ -44,6 +44,7 @@
       background: white;
       padding: 25px;
       text-align: center;
+      border-bottom: 1px solid var(--border);
     }
 
     header img {
@@ -51,11 +52,11 @@
       height: auto;
     }
 
-    header h1 {
-      margin: 0;
-      font-size: 1.8rem;
-      font-weight: 700;
-      font-family: 'Nunito', sans-serif;
+    header p {
+      margin: 10px 0;
+      font-size: 14px;
+      color: var(--gray);
+      line-height: 1.5;
     }
 
     .content {
@@ -237,15 +238,6 @@
     .kesukaran-display div {
       margin: 4px 0;
     }
-
-    @media (max-width: 768px) {
-      .topik-grid, .totals-display {
-        flex-direction: column;
-      }
-      .action-buttons {
-        flex-direction: column;
-      }
-    }
   </style>
 </head>
 <body>
@@ -256,12 +248,12 @@
       <img src="https://example.com/logo-kias.png" alt="Logo Kolej Universiti Islam Antarabangsa Sultan Ismail Petra" style="max-width: 100%; height: auto;" />
 
       <!-- Maklumat Institusi -->
-      <p style="font-size: 16px; font-weight: 500;">
-        KOLEJ UNIVERSITI ISLAM ANTARABANGSA SULTAN ISMAIL PETRA (KIAS)<br>
+      <p style="font-size: 14px; color: #333;">
+        <strong>KOLEJ UNIVERSITI ISLAM ANTARABANGSA SULTAN ISMAIL PETRA (KIAS)</strong><br>
         SULTAN ISMAIL PETRA INTERNATIONAL ISLAMIC UNIVERSITY COLLEGE<br>
         KM 12, Jalan Kuala Krai, Peti Surat 68, Nilam Puri, 15730 Kota Bharu, Kelantan Darulnaim.<br>
-        Tel: 609 - 712 9386 / 712 9387 Fax: 609 - 712 9444 / 712 6100<br>
-        Email: admin@kias.edu.my Website: www.kias.edu.my IPTS: DKU045(D)
+        Tel: 609 - 712 9386 / 712 9387 &nbsp;&bull;&nbsp; Fax: 609 - 712 9444 / 712 6100<br>
+        Email: admin@kias.edu.my &nbsp;&bull;&nbsp; Website: www.kias.edu.my &nbsp;&bull;&nbsp; IPTS: DKU045(D)
       </p>
     </header>
 
@@ -540,6 +532,26 @@
         </p>
       `;
 
+      // Tanda Tangan
+      output += `
+        <div style="margin-top: 40px; display: flex; justify-content: space-between; font-size: 14px;">
+          <div style="width: 45%; text-align: center;">
+            <p>Disediakan oleh,</p>
+            <br><br><br>
+            <div style="border-bottom: 1px solid #000; padding: 5px 0; font-style: italic;">Tanda Tangan Pensyarah / Penggubal</div>
+            <p style="margin-top: 5px;">Nama: _________________________</p>
+            <p>Tarikh: _________________________</p>
+          </div>
+          <div style="width: 45%; text-align: center;">
+            <p>Disahkan oleh,</p>
+            <br><br><br>
+            <div style="border-bottom: 1px solid #000; padding: 5px 0; font-style: italic;">Tanda Tangan Dekan / Ketua Program</div>
+            <p style="margin-top: 5px;">Nama: _________________________</p>
+            <p>Tarikh: _________________________</p>
+          </div>
+        </div>
+      `;
+
       document.getElementById('output').innerHTML = output;
     }
 
@@ -582,9 +594,13 @@
           <head>
             <title>JSU - Cetak</title>
             <style>
-              body { font-family: Arial, sans-serif; padding: 20px; }
+              body { font-family: Arial, sans-serif; padding: 30px; }
               table { border-collapse: collapse; width: 100%; }
               th, td { border: 1px solid #000; padding: 8px; text-align: center; }
+              th { background-color: #e9ecef; }
+              .signature { margin-top: 40px; display: flex; justify-content: space-between; }
+              .signature div { width: 45%; text-align: center; }
+              .signature .line { border-bottom: 1px solid #000; padding: 5px 0; font-style: italic; }
             </style>
           </head>
           <body>${output}</body>
