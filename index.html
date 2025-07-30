@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Aplikasi JSU</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Jadual Spesifikasi Ujian (JSU)</h1>
+
+    <section>
+      <h2>Maklumat Kursus</h2>
+      <label>Nama Kursus: <input type="text" id="namaKursus" /></label>
+      <label>Kod Kursus: <input type="text" id="kodKursus" /></label>
+      <label>Semester: <input type="text" id="semester" /></label>
+      <label>Tahun Pengajian: <input type="number" id="tahunPengajian" /></label>
+      <label>Nama Pensyarah: <input type="text" id="namaPensyarah" /></label>
+    </section>
+
+    <section>
+      <h2>Pernyataan HPK</h2>
+      <textarea id="hpk" rows="3" placeholder="Masukkan penyataan HPK dari RPS"></textarea>
+    </section>
+
+    <section>
+      <h2>Topik dan Item</h2>
+      <table id="topikTable">
+        <thead>
+          <tr>
+            <th>Nama Topik</th>
+            <th>Markah</th>
+            <th>Jenis Item</th>
+            <th>Tindakan</th>
+          </tr>
+        </thead>
+        <tbody id="topikBody"></tbody>
+      </table>
+      <button onclick="tambahTopik()">+ Tambah Topik</button>
+    </section>
+
+    <section>
+      <h2>Peratus Tahap Kesukaran</h2>
+      <div class="kesukaran">
+        <label>C1: <input type="number" id="c1" />%</label>
+        <label>C2: <input type="number" id="c2" />%</label>
+        <label>C3: <input type="number" id="c3" />%</label>
+        <label>C4: <input type="number" id="c4" />%</label>
+        <label>C5: <input type="number" id="c5" />%</label>
+        <label>C6: <input type="number" id="c6" />%</label>
+      </div>
+      <p id="jumlahKesukaran"></p>
+    </section>
+
+    <section class="butang">
+      <button onclick="paparJSU()">Papar JSU</button>
+      <button onclick="resetBorang()">Reset</button>
+      <button onclick="muatTurunExcel()">Muat Turun Excel</button>
+      <button onclick="muatTurunPDF()">Muat Turun PDF</button>
+    </section>
+
+    <section>
+      <h2>Jadual Spesifikasi Ujian</h2>
+      <div id="output"></div>
+    </section>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
