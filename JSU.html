@@ -1,245 +1,533 @@
 <!DOCTYPE html>
 <html lang="ms">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Jadual Spesifikasi Ujian (JSU)</title>
+  <!-- Google Fonts: Inter & Nunito -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f4f7fa;
-      padding: 30px;
+    :root {
+      --primary: #2c7be5;
+      --primary-dark: #1a68d1;
+      --danger: #e63946;
+      --success: #28a745;
+      --gray: #6c757d;
+      --light: #f8f9fa;
+      --dark: #343a40;
+      --border: #dee2e6;
+      --shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
     }
-    h2, h3 {
-      color: #333;
-    }
-    label {
-      display: block;
-      margin-top: 10px;
-      font-weight: bold;
-    }
-    input, textarea, select, button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 4px;
-      margin-bottom: 10px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
+
+    * {
       box-sizing: border-box;
     }
-    .btn {
-      background-color: #007bff;
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f1f3f6;
+      color: var(--dark);
+      line-height: 1.6;
+      padding: 20px;
+      margin: 0;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    header {
+      background: var(--primary);
       color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      font-weight: 700;
+      font-family: 'Nunito', sans-serif;
+    }
+
+    .content {
+      padding: 30px;
+    }
+
+    .section {
+      margin-bottom: 30px;
+    }
+
+    h2, h3 {
+      color: var(--primary);
+      font-weight: 600;
+      border-bottom: 2px solid #e9ecef;
+      padding-bottom: 8px;
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-top: 12px;
+      font-weight: 500;
+      color: var(--dark);
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 10px 12px;
+      margin-top: 6px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(44, 123, 229, 0.2);
+    }
+
+    .btn {
+      padding: 10px 16px;
       border: none;
+      border-radius: 8px;
       cursor: pointer;
-      transition: background 0.3s;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
-    .btn:hover {
-      background-color: #0056b3;
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
     }
+
+    .btn-primary:hover {
+      background-color: var(--primary-dark);
+    }
+
+    .btn-danger {
+      background-color: var(--danger);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background-color: #c82333;
+    }
+
+    .btn-success {
+      background-color: var(--success);
+      color: white;
+    }
+
+    .btn-success:hover {
+      background-color: #218838;
+    }
+
+    .btn-sm {
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+
+    .action-buttons {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .action-buttons .btn {
+      flex: 1;
+      min-width: 120px;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 20px;
-      background: white;
+      margin-top: 15px;
+      font-size: 14px;
     }
+
     th, td {
-      border: 1px solid #ccc;
-      padding: 10px;
+      border: 1px solid var(--border);
+      padding: 12px;
       text-align: center;
     }
+
     th {
-      background: #e9ecef;
+      background-color: #f1f3f6;
+      color: var(--dark);
+      font-weight: 600;
     }
+
+    tr:nth-child(even) {
+      background-color: #fafbfc;
+    }
+
     .topik-card {
-      background: #fff;
-      border: 1px solid #ddd;
-      padding: 15px;
+      background: white;
+      border: 1px solid var(--border);
       border-radius: 10px;
-      margin-bottom: 10px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      transition: transform 0.2s ease;
     }
+
+    .topik-card:hover {
+      transform: translateY(-2px);
+    }
+
     .topik-grid {
       display: flex;
-      gap: 15px;
-      align-items: flex-start;
+      gap: 16px;
+      align-items: flex-end;
       flex-wrap: wrap;
     }
+
     .topik-grid > div {
       flex: 1;
-      min-width: 150px;
+      min-width: 140px;
     }
+
     .remove-btn {
-      background-color: #dc3545;
+      background-color: var(--danger);
       color: white;
       border: none;
-      padding: 8px 10px;
-      border-radius: 6px;
-      margin-top: 28px;
+      padding: 10px 12px;
+      border-radius: 8px;
       cursor: pointer;
+      font-size: 13px;
+      transition: background 0.3s;
     }
+
     .remove-btn:hover {
-      background-color: #b02a37;
+      background-color: #c82333;
     }
-    .action-buttons button {
-      margin-right: 10px;
+
+    #output {
+      margin-top: 30px;
+      padding: 20px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.05);
+    }
+
+    .alert {
+      padding: 12px;
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      font-size: 14px;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    @media (max-width: 768px) {
+      .topik-grid {
+        flex-direction: column;
+      }
+      .action-buttons {
+        flex-direction: column;
+      }
+      .btn {
+        width: 100%;
+      }
     }
   </style>
 </head>
 <body>
 
-  <h2>Jadual Spesifikasi Ujian (JSU)</h2>
+  <div class="container">
+    <header>
+      <h1>📘 Jadual Spesifikasi Ujian (JSU)</h1>
+    </header>
 
-  <label>Nama Kursus:</label>
-  <input type="text" id="namaKursus">
+    <div class="content">
+      <!-- Maklumat Kursus -->
+      <div class="section">
+        <h2>📝 Maklumat Kursus</h2>
+        <label>Nama Kursus</label>
+        <input type="text" id="namaKursus" placeholder="Contoh: Asas Pemrograman" />
 
-  <label>Kod Kursus:</label>
-  <input type="text" id="kodKursus">
+        <label>Kod Kursus</label>
+        <input type="text" id="kodKursus" placeholder="Contoh: CSC101" />
 
-  <label>Semester:</label>
-  <input type="text" id="semester">
+        <label>Semester</label>
+        <input type="text" id="semester" placeholder="Contoh: Semester 1" />
 
-  <label>Tahun Pengajian:</label>
-  <select id="tahunPengajian">
-    <option value="1">Tahun 1</option>
-    <option value="2">Tahun 2</option>
-    <option value="3">Tahun 3</option>
-    <option value="4">Tahun 4</option>
-  </select>
+        <label>Tahun Pengajian</label>
+        <select id="tahunPengajian">
+          <option value="">Pilih Tahun</option>
+          <option value="1">Tahun 1</option>
+          <option value="2">Tahun 2</option>
+          <option value="3">Tahun 3</option>
+          <option value="4">Tahun 4</option>
+        </select>
 
-  <label>Penyataan HPK:</label>
-  <textarea id="hpk" rows="3"></textarea>
+        <label>Penyataan HPK</label>
+        <textarea id="hpk" rows="3" placeholder="Contoh: Murid dapat mengenal pasti struktur asas HTML."></textarea>
+      </div>
 
-  <h3>Bahagian Topik dan Item</h3>
-  <div id="senaraiTopik"></div>
-  <button class="btn" onclick="tambahTopik()">+ Tambah Topik</button>
+      <!-- Topik dan Item -->
+      <div class="section">
+        <h2>📌 Topik dan Item Soalan</h2>
+        <div id="senaraiTopik"></div>
+        <button class="btn btn-primary btn-sm" onclick="tambahTopik()">
+          ➕ Tambah Topik
+        </button>
+      </div>
 
-  <h3>Peratus Tahap Kesukaran (Jumlah 100%)</h3>
-  <label>C1 (Ingat):</label>
-  <input type="number" id="C1" value="0">
-  <label>C2 (Faham):</label>
-  <input type="number" id="C2" value="0">
-  <label>C3 (Aplikasi):</label>
-  <input type="number" id="C3" value="0">
+      <!-- Tahap Kesukaran -->
+      <div class="section">
+        <h2>📊 Peratus Tahap Kesukaran (Jumlah 100%)</h2>
+        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+          <div style="flex: 1; min-width: 120px;">
+            <label>C1 (Ingat)</label>
+            <input type="number" id="C1" value="0" min="0" max="100" placeholder="%" />
+          </div>
+          <div style="flex: 1; min-width: 120px;">
+            <label>C2 (Faham)</label>
+            <input type="number" id="C2" value="0" min="0" max="100" placeholder="%" />
+          </div>
+          <div style="flex: 1; min-width: 120px;">
+            <label>C3 (Aplikasi)</label>
+            <input type="number" id="C3" value="0" min="0" max="100" placeholder="%" />
+          </div>
+        </div>
+      </div>
 
-  <div class="action-buttons">
-    <button class="btn" onclick="janaJSU()">Papar JSU</button>
-    <button class="btn" onclick="muatTurunWord()">Muat Turun Word</button>
-    <button class="btn" onclick="muatTurunExcel()">Muat Turun Excel</button>
-    <button class="btn" onclick="cetakJSU()">Cetak</button>
+      <!-- Butang Aksi -->
+      <div class="action-buttons">
+        <button class="btn btn-primary" onclick="janaJSU()">👁️ Papar JSU</button>
+        <button class="btn btn-success" onclick="muatTurunWord()">📥 Muat Turun Word</button>
+        <button class="btn btn-success" onclick="muatTurunExcel()">📊 Muat Turun Excel</button>
+        <button class="btn btn-primary" onclick="cetakJSU()">🖨️ Cetak</button>
+      </div>
+
+      <!-- Output -->
+      <div id="output"></div>
+    </div>
   </div>
 
-  <div id="output"></div>
-
+  <!-- Library untuk Excel -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <script>
+    // Tambah Topik
     function tambahTopik() {
       const card = document.createElement('div');
       card.className = 'topik-card';
       card.innerHTML = `
         <div class="topik-grid">
           <div>
-            <label>Nama Topik</label>
-            <input type="text" placeholder="Contoh: Tajuk 1">
+            <label>Topik</label>
+            <input type="text" placeholder="Contoh: HTML Asas" required />
           </div>
           <div>
-            <label>Bilangan Soalan</label>
-            <input type="number" placeholder="Contoh: 3">
+            <label>Bil. Soalan</label>
+            <input type="number" min="1" placeholder="3" />
           </div>
           <div>
             <label>Markah/Soalan</label>
-            <input type="number" placeholder="Contoh: 5">
+            <input type="number" min="1" placeholder="5" />
           </div>
           <div>
-            <button class="remove-btn" onclick="hapusBarisIni(this)">Buang</button>
+            <button class="remove-btn" onclick="hapusBarisIni(this)">✕ Buang</button>
           </div>
         </div>
       `;
       document.getElementById('senaraiTopik').appendChild(card);
     }
 
+    // Hapus Topik
     function hapusBarisIni(btn) {
       btn.closest('.topik-card').remove();
     }
 
+    // Jana JSU
     function janaJSU() {
-      const namaKursus = document.getElementById('namaKursus').value;
-      const kodKursus = document.getElementById('kodKursus').value;
-      const semester = document.getElementById('semester').value;
+      const namaKursus = document.getElementById('namaKursus').value.trim();
+      const kodKursus = document.getElementById('kodKursus').value.trim();
+      const semester = document.getElementById('semester').value.trim();
       const tahun = document.getElementById('tahunPengajian').value;
-      const hpk = document.getElementById('hpk').value;
+      const hpk = document.getElementById('hpk').value.trim();
       const C1 = parseInt(document.getElementById('C1').value) || 0;
       const C2 = parseInt(document.getElementById('C2').value) || 0;
       const C3 = parseInt(document.getElementById('C3').value) || 0;
 
-      if (C1 + C2 + C3 !== 100) {
-        alert("Jumlah peratus tahap kesukaran mestilah 100%");
+      // Validasi input
+      if (!namaKursus || !kodKursus || !semester || !tahun || !hpk) {
+        alert("Sila lengkapkan semua maklumat kursus.");
         return;
       }
 
-      let output = `<h3>Jadual Spesifikasi Ujian</h3>`;
-      output += `<p><strong>Nama Kursus:</strong> ${namaKursus}</p>`;
-      output += `<p><strong>Kod Kursus:</strong> ${kodKursus}</p>`;
-      output += `<p><strong>Semester:</strong> ${semester}</p>`;
-      output += `<p><strong>Tahun Pengajian:</strong> ${tahun}</p>`;
-      output += `<p><strong>HPK:</strong> ${hpk}</p>`;
+      if (C1 + C2 + C3 !== 100) {
+        alert("Jumlah peratus tahap kesukaran mestilah tepat 100%.");
+        return;
+      }
 
-      output += `<table><tr><th>Topik</th><th>Bil. Soalan</th><th>Markah/Soalan</th><th>Jumlah Markah</th></tr>`;
+      let topikValid = true;
+      const topikInputs = document.querySelectorAll("#senaraiTopik .topik-card");
+      if (topikInputs.length === 0) {
+        alert("Sila tambah sekurang-kurangnya satu topik.");
+        return;
+      }
+
+      topikInputs.forEach(card => {
+        const inputs = card.querySelectorAll("input");
+        const topik = inputs[0].value.trim();
+        const bil = parseInt(inputs[1].value);
+        const markah = parseInt(inputs[2].value);
+        if (!topik || isNaN(bil) || isNaN(markah) || bil <= 0 || markah <= 0) {
+          topikValid = false;
+        }
+      });
+
+      if (!topikValid) {
+        alert("Pastikan semua topik diisi dengan betul (topik, bilangan soalan, markah).");
+        return;
+      }
+
+      // Hasilkan output
+      let output = `
+        <h3 style="color: #2c7be5; margin-bottom: 10px;">📘 Jadual Spesifikasi Ujian</h3>
+        <p><strong>Nama Kursus:</strong> ${namaKursus}</p>
+        <p><strong>Kod Kursus:</strong> ${kodKursus}</p>
+        <p><strong>Semester:</strong> ${semester}</p>
+        <p><strong>Tahun Pengajian:</strong> Tahun ${tahun}</p>
+        <p><strong>HPK:</strong> "${hpk}"</p>
+      `;
+
+      output += `
+        <table>
+          <tr>
+            <th>Topik</th>
+            <th>Bil. Soalan</th>
+            <th>Markah/Soalan</th>
+            <th>Jumlah Markah</th>
+          </tr>
+      `;
+
       let totalSoalan = 0;
       let totalMarkah = 0;
 
-      document.querySelectorAll("#senaraiTopik .topik-card").forEach(card => {
-        const input = card.querySelectorAll("input");
-        const topik = input[0].value;
-        const bil = parseInt(input[1].value) || 0;
-        const markah = parseInt(input[2].value) || 0;
+      topikInputs.forEach(card => {
+        const inputs = card.querySelectorAll("input");
+        const topik = inputs[0].value;
+        const bil = parseInt(inputs[1].value) || 0;
+        const markah = parseInt(inputs[2].value) || 0;
         const jumlah = bil * markah;
 
         totalSoalan += bil;
         totalMarkah += jumlah;
 
-        output += `<tr><td>${topik}</td><td>${bil}</td><td>${markah}</td><td>${jumlah}</td></tr>`;
+        output += `<tr>
+          <td style="text-align: left;">${topik}</td>
+          <td>${bil}</td>
+          <td>${markah}</td>
+          <td>${jumlah}</td>
+        </tr>`;
       });
 
-      output += `<tr style="font-weight:bold">
-        <td>Jumlah</td><td>${totalSoalan}</td><td>-</td><td>${totalMarkah}</td>
-      </tr>`;
-      output += `</table>`;
+      output += `
+        <tr style="font-weight: bold; background-color: #f1f3f6;">
+          <td>Jumlah</td>
+          <td>${totalSoalan}</td>
+          <td>-</td>
+          <td>${totalMarkah}</td>
+        </tr>
+      </table>`;
 
-      output += `<p><strong>Peratus Tahap Kesukaran:</strong> C1: ${C1}%, C2: ${C2}%, C3: ${C3}%</p>`;
+      output += `<p><strong>Peratus Tahap Kesukaran:</strong> 
+        C1 (Ingat): ${C1}%, 
+        C2 (Faham): ${C2}%, 
+        C3 (Aplikasi): ${C3}%</p>`;
+
       document.getElementById('output').innerHTML = output;
     }
 
+    // Muat Turun Word
     function muatTurunWord() {
-      const content = document.getElementById("output").innerHTML;
-      const blob = new Blob([`<html><head><meta charset='utf-8'></head><body>${content}</body></html>`], { type: "application/msword" });
-      const link = document.createElement("a");
+      const outputDiv = document.getElementById('output').innerHTML;
+      const htmlContent = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office"
+              xmlns:w="urn:schemas-microsoft-com:office:word"
+              xmlns="http://www.w3.org/TR/REC-html40">
+        <head>
+          <meta charset="utf-8"/>
+          <title>JSU</title>
+          <style>
+            body { font-family: 'Segoe UI', sans-serif; }
+            table { border-collapse: collapse; width: 100%; }
+            th, td { border: 1px solid #000; padding: 8px; text-align: center; }
+            th { background-color: #e9ecef; }
+          </style>
+        </head>
+        <body>${outputDiv}</body>
+        </html>
+      `;
+      const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword' });
+      const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = "JSU.doc";
+      link.download = `JSU_${document.getElementById('kodKursus').value || 'Kursus'}.doc`;
       link.click();
     }
 
+    // Muat Turun Excel
+    function muatTurunExcel() {
+      const table = document.querySelector("#output table");
+      if (!table) {
+        alert("Tiada jadual untuk dimuat turun.");
+        return;
+      }
+      const wb = XLSX.utils.table_to_book(table, { sheet: "JSU" });
+      XLSX.writeFile(wb, `JSU_${document.getElementById('kodKursus').value || 'Kursus'}.xlsx`);
+    }
+
+    // Cetak
     function cetakJSU() {
-      const win = window.open("", "", "width=800,height=600");
-      win.document.write("<html><head><title>JSU</title></head><body>");
-      win.document.write(document.getElementById("output").innerHTML);
-      win.document.write("</body></html>");
+      const output = document.getElementById('output').innerHTML;
+      const win = window.open('', '', 'width=800,height=600');
+      win.document.write(`
+        <html>
+          <head>
+            <title>Cetak JSU</title>
+            <style>
+              body { font-family: Arial, sans-serif; padding: 20px; }
+              table { border-collapse: collapse; width: 100%; }
+              th, td { border: 1px solid #000; padding: 8px; text-align: center; }
+              th { background-color: #e9ecef; }
+            </style>
+          </head>
+          <body>${output}</body>
+        </html>
+      `);
       win.document.close();
       win.focus();
       win.print();
       win.close();
     }
 
-    function muatTurunExcel() {
-      const table = document.createElement("table");
-      table.innerHTML = document.getElementById("output").querySelector("table").innerHTML;
-      const wb = XLSX.utils.table_to_book(table);
-      XLSX.writeFile(wb, "JSU.xlsx");
-    }
-
-    // Mula dengan satu baris
-    window.onload = tambahTopik;
+    // Auto-tambah topik pertama
+    window.onload = function () {
+      tambahTopik();
+    };
   </script>
-
 </body>
 </html>
