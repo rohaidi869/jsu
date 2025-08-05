@@ -1,10 +1,9 @@
-```html
 <!DOCTYPE html>
 <html lang="ms">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Jadual Spesifikasi Ujian (JSU)</title>
+  <title>Jadual Spesifikasi Ujian (JSU) - Soalan Wajib/Pilihan</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@400;600&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -12,7 +11,8 @@
       --primary-dark: #1a68d1;
       --danger: #e63946;
       --success: #28a745;
-      --warning: #ffc107; /* For copy button */
+      --warning: #ffc107;
+      --info: #17a2b8;
       --gray: #6c757d;
       --dark: #343a40;
       --light: #f8f9fa;
@@ -31,7 +31,7 @@
       margin: 0;
     }
     .container {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
       background: white;
       border-radius: 12px;
@@ -122,12 +122,19 @@
     .btn-success:hover {
       background-color: #218838;
     }
-    .btn-warning { /* Copy button style */
+    .btn-warning {
       background-color: var(--warning);
-      color: #212529; /* Darker text for contrast */
+      color: #212529;
     }
     .btn-warning:hover {
       background-color: #e0a800;
+    }
+    .btn-info {
+      background-color: var(--info);
+      color: white;
+    }
+    .btn-info:hover {
+      background-color: #138496;
     }
     .btn-sm {
       padding: 8px 12px;
@@ -162,7 +169,7 @@
     tr:nth-child(even) {
       background-color: #fafbfc;
     }
-    .topik-card {
+    .soalan-card {
       background: white;
       border: 1px solid var(--border);
       border-radius: 10px;
@@ -171,14 +178,34 @@
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
       transition: transform 0.2s ease;
     }
-    .topik-grid {
+    .soalan-card-header {
       display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .soalan-card-header h3 {
+      margin: 0;
+      color: var(--primary);
+      font-size: 18px;
+    }
+    .topik-card {
+      background: #f8f9fa;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 10px;
+      margin-bottom: 8px;
+    }
+    .topik-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
       gap: 12px;
-      align-items: flex-end;
-      flex-wrap: wrap;
+      align-items: end;
     }
     .topik-grid > div {
-      flex: 1;
       min-width: 130px;
     }
     .remove-btn {
@@ -214,6 +241,33 @@
     }
     .kesukaran-display div {
       margin: 4px 0;
+    }
+    .wajib-badge {
+      background-color: var(--success);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .pilihan-badge {
+      background-color: var(--warning);
+      color: #212529;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .topik-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .reset-section {
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px solid var(--border);
     }
     @media (max-width: 768px) {
       header {
@@ -269,18 +323,17 @@
         <label>Penyataan HPK</label>
         <textarea id="hpk" rows="3" placeholder="Contoh: Murid dapat mengenal pasti struktur asas HTML."></textarea>
       </div>
-      <!-- Topik dan Item -->
+      <!-- Soalan Wajib/Pilihan -->
       <div class="section">
-        <h2>📌 Topik dan Item Soalan</h2>
-        <div id="senaraiTopik"></div>
-        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-            <button class="btn btn-primary btn-sm" onclick="tambahTopik()">➕ Tambah Topik</button>
-            <button class="btn btn-warning btn-sm" onclick="salinTopikTerakhir()" title="Salin maklumat dari baris terakhir">📋 Salin Topik Terakhir</button>
-        </div>
+        <h2>📌 Soalan Wajib/Pilihan</h2>
+        <div id="senaraiSoalan"></div>
+        <button class="btn btn-primary btn-sm" onclick="tambahSoalan()">➕ Tambah Soalan (Wajib/Pilihan)</button>
         <!-- Paparan Total Soalan & Markah -->
         <div class="totals-display">
           <div>Total Soalan: <span id="totalSoalan">0</span></div>
           <div>Total Markah: <span id="totalMarkah">0</span></div>
+          <div>Wajib: <span id="totalWajib">0</span></div>
+          <div>Pilihan: <span id="totalPilihan">0</span></div>
         </div>
       </div>
       <!-- Peratus Tahap Kesukaran (Auto-Kira Berdasarkan MARKAH) -->
@@ -306,7 +359,7 @@
         <!-- Paparan jumlah markah mengikut tahap -->
         <div class="kesukaran-display">
           <strong>Distribusi Markah:</strong>
-          <div id="kesukaranInfo">Belum ada topik ditambah.</div>
+          <div id="kesukaranInfo">Belum ada soalan ditambah.</div>
         </div>
       </div>
       <!-- Butang Aksi -->
@@ -316,6 +369,12 @@
         <button class="btn btn-success" onclick="muatTurunExcel()">📊 Muat Turun Excel</button>
         <button class="btn btn-primary" onclick="cetakJSU()">🖨️ Cetak</button>
       </div>
+      
+      <!-- Reset Section -->
+      <div class="reset-section">
+        <button class="btn btn-danger" onclick="resetSemuaData()" title="Reset semua data ke nilai asal">🔄 Reset Semua Data</button>
+      </div>
+      
       <!-- Output -->
       <div id="output"></div>
     </div>
@@ -323,7 +382,175 @@
   <!-- Excel Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script>
-    function tambahTopik() {
+    const STORAGE_KEY = 'janaJSUDataWajibPilihan';
+
+    // Fungsi untuk menyimpan data ke localStorage
+    function simpanData() {
+        const data = {
+            namaKursus: document.getElementById('namaKursus').value,
+            kodKursus: document.getElementById('kodKursus').value,
+            semester: document.getElementById('semester').value,
+            tahunPengajian: document.getElementById('tahunPengajian').value,
+            hpk: document.getElementById('hpk').value,
+            soalanCards: []
+        };
+
+        // Simpan data dari setiap soalan card
+        const soalanCards = document.querySelectorAll('#senaraiSoalan .soalan-card');
+        soalanCards.forEach((soalanCard, soalanIndex) => {
+            const headerSelect = soalanCard.querySelector('.soalan-card-header select');
+            const jenis = headerSelect.value;
+            
+            const soalanData = {
+                jenis: jenis,
+                topikCards: []
+            };
+            
+            // Simpan data dari setiap topik card dalam soalan ini
+            const topikCards = soalanCard.querySelectorAll('.topik-card');
+            topikCards.forEach(topikCard => {
+                const inputs = topikCard.querySelectorAll('input, select');
+                const cardData = [];
+                inputs.forEach(input => {
+                    if (input.type === 'text' || input.type === 'number') {
+                        cardData.push({ type: 'input', value: input.value });
+                    } else if (input.tagName === 'SELECT') {
+                        cardData.push({ type: 'select', value: input.value });
+                    }
+                });
+                soalanData.topikCards.push(cardData);
+            });
+            
+            data.soalanCards.push(soalanData);
+        });
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    // Fungsi untuk memuatkan data dari localStorage
+    function muatData() {
+        const dataStr = localStorage.getItem(STORAGE_KEY);
+        if (!dataStr) return false;
+
+        try {
+            const data = JSON.parse(dataStr);
+            
+            // Muat data maklumat kursus
+            document.getElementById('namaKursus').value = data.namaKursus || '';
+            document.getElementById('kodKursus').value = data.kodKursus || '';
+            document.getElementById('semester').value = data.semester || '';
+            document.getElementById('tahunPengajian').value = data.tahunPengajian || '';
+            document.getElementById('hpk').value = data.hpk || '';
+            
+            // Kosongkan senarai soalan sedia ada
+            document.getElementById('senaraiSoalan').innerHTML = '';
+            
+            // Muat semula soalan cards
+            data.soalanCards.forEach((soalanData, soalanIndex) => {
+                // Tambah soalan card
+                window.soalanCounter = soalanIndex; // Set global counter
+                tambahSoalan();
+                
+                const soalanCards = document.querySelectorAll('#senaraiSoalan .soalan-card');
+                const newSoalanCard = soalanCards[soalanCards.length - 1];
+                
+                // Set jenis soalan (Wajib/Pilihan)
+                const headerSelect = newSoalanCard.querySelector('.soalan-card-header select');
+                headerSelect.value = soalanData.jenis;
+                
+                // Kosongkan topik cards yang dicipta secara default
+                const containerId = `senaraiTopikSoalan${soalanIndex + 1}`;
+                document.getElementById(containerId).innerHTML = '';
+                
+                // Muat semula topik cards untuk soalan ini
+                soalanData.topikCards.forEach(cardData => {
+                    tambahTopikUntukSoalan(soalanIndex + 1); // Tambah card kosong
+                    const topikCards = document.querySelectorAll(`#senaraiTopikSoalan${soalanIndex + 1} .topik-card`);
+                    const newTopikCard = topikCards[topikCards.length - 1];
+                    const inputs = newTopikCard.querySelectorAll('input, select');
+                    
+                    // Isi nilai ke dalam input/select
+                    cardData.forEach((item, index) => {
+                        if (inputs[index]) {
+                            inputs[index].value = item.value;
+                        }
+                    });
+                });
+            });
+            
+            window.soalanCounter = data.soalanCards.length; // Update global counter
+            kiraStatistik(); // Kira semula statistik
+            return true;
+        } catch (e) {
+            console.error('Ralat memuat data dari localStorage:', e);
+            return false;
+        }
+    }
+
+    // Fungsi untuk reset semua data
+    function resetSemuaData() {
+        if (confirm('Adakah anda pasti mahu reset semua data ke nilai asal? Ini akan memadam semua data yang telah dimasukkan.')) {
+            localStorage.removeItem(STORAGE_KEY);
+            // Reset form fields
+            document.getElementById('namaKursus').value = '';
+            document.getElementById('kodKursus').value = '';
+            document.getElementById('semester').value = '';
+            document.getElementById('tahunPengajian').value = '';
+            document.getElementById('hpk').value = '';
+            
+            // Kosongkan senarai soalan
+            document.getElementById('senaraiSoalan').innerHTML = '';
+            window.soalanCounter = 0; // Reset global counter
+            
+            // Tambah satu soalan kosong
+            tambahSoalan();
+            
+            // Reset statistik
+            kiraStatistik();
+        }
+    }
+
+    // Setup auto-save listeners
+    function setupAutoSave() {
+        // Auto-save untuk input maklumat kursus
+        const inputs = document.querySelectorAll('#namaKursus, #kodKursus, #semester, #tahunPengajian, #hpk');
+        inputs.forEach(input => {
+            input.addEventListener('input', simpanData);
+            input.addEventListener('change', simpanData);
+        });
+        
+        // Auto-save untuk dropdown tahun pengajian
+        document.getElementById('tahunPengajian').addEventListener('change', simpanData);
+    }
+
+    let soalanCounter = 0;
+    function tambahSoalan() {
+      soalanCounter++;
+      const card = document.createElement('div');
+      card.className = 'soalan-card';
+      card.innerHTML = `
+        <div class="soalan-card-header">
+          <h3>Soalan ${soalanCounter}</h3>
+          <select onchange="kiraStatistik(); simpanData();">
+            <option value="Wajib">Wajib</option>
+            <option value="Pilihan">Pilihan</option>
+          </select>
+        </div>
+        <div id="senaraiTopikSoalan${soalanCounter}"></div>
+        <div class="topik-actions">
+            <button class="btn btn-primary btn-sm" onclick="tambahTopikUntukSoalan(${soalanCounter})">➕ Tambah Topik</button>
+            <button class="btn btn-warning btn-sm" onclick="salinTopikTerakhirUntukSoalan(${soalanCounter})" title="Salin maklumat dari baris terakhir">📋 Salin Topik Terakhir</button>
+        </div>
+      `;
+      document.getElementById('senaraiSoalan').appendChild(card);
+      setTimeout(() => {
+          tambahTopikUntukSoalan(soalanCounter);
+          kiraStatistik();
+          simpanData(); // Simpan data selepas menambah soalan baru
+      }, 10);
+    }
+    function tambahTopikUntukSoalan(soalanId) {
+      const containerId = `senaraiTopikSoalan${soalanId}`;
       const card = document.createElement('div');
       card.className = 'topik-card';
       card.innerHTML = `
@@ -334,7 +561,7 @@
           </div>
           <div>
             <label>Bentuk Soalan</label>
-            <select onchange="kiraStatistik()">
+            <select onchange="kiraStatistik(); simpanData();">
               <option value="Objektif">Objektif</option>
               <option value="Struktur">Struktur</option>
               <option value="Esei">Esei</option>
@@ -342,42 +569,50 @@
           </div>
           <div>
             <label>Bil. Soalan</label>
-            <input type="number" min="1" placeholder="3" oninput="kiraStatistik()" />
+            <input type="number" min="1" placeholder="3" oninput="kiraStatistik(); simpanData();" />
           </div>
           <div>
             <label>Markah/Soalan</label>
-            <input type="number" min="1" placeholder="5" oninput="kiraStatistik()" />
+            <input type="number" min="1" placeholder="5" oninput="kiraStatistik(); simpanData();" />
           </div>
           <div>
             <label>Tahap Kesukaran</label>
-            <select onchange="kiraStatistik()">
+            <select onchange="kiraStatistik(); simpanData();">
               <option value="Rendah">Rendah</option>
               <option value="Sederhana">Sederhana</option>
               <option value="Tinggi">Tinggi</option>
             </select>
           </div>
           <div>
-            <button class="remove-btn" onclick="hapusBarisIni(this)">✕ Buang</button>
+            <button class="remove-btn" onclick="hapusBarisIni(this); simpanData();">✕ Buang</button>
           </div>
         </div>
       `;
-      document.getElementById('senaraiTopik').appendChild(card);
-      setTimeout(kiraStatistik, 10);
+      document.getElementById(containerId).appendChild(card);
+      
+      // Tambah auto-save untuk input dalam card baru
+      const newInputs = card.querySelectorAll('input, select');
+      newInputs.forEach(input => {
+          input.addEventListener('input', simpanData);
+          input.addEventListener('change', simpanData);
+      });
+      
+      setTimeout(() => {
+          kiraStatistik();
+          simpanData(); // Simpan data selepas menambah topik baru
+      }, 10);
     }
-
-    function salinTopikTerakhir() {
-        const senaraiTopik = document.getElementById('senaraiTopik');
+    function salinTopikTerakhirUntukSoalan(soalanId) {
+        const containerId = `senaraiTopikSoalan${soalanId}`;
+        const senaraiTopik = document.getElementById(containerId);
         const topikCards = senaraiTopik.querySelectorAll('.topik-card');
-
         if (topikCards.length === 0) {
             alert("Tiada topik untuk disalin. Sila tambah topik terlebih dahulu.");
             return;
         }
-
         // Dapatkan card terakhir
         const lastCard = topikCards[topikCards.length - 1];
         const inputs = lastCard.querySelectorAll("input, select");
-
         // Cipta card baru
         const newCard = document.createElement('div');
         newCard.className = 'topik-card';
@@ -389,7 +624,7 @@
                 </div>
                 <div>
                     <label>Bentuk Soalan</label>
-                    <select onchange="kiraStatistik()">
+                    <select onchange="kiraStatistik(); simpanData();">
                         <option value="Objektif">Objektif</option>
                         <option value="Struktur">Struktur</option>
                         <option value="Esei">Esei</option>
@@ -397,26 +632,25 @@
                 </div>
                 <div>
                     <label>Bil. Soalan</label>
-                    <input type="number" min="1" placeholder="3" oninput="kiraStatistik()" />
+                    <input type="number" min="1" placeholder="3" oninput="kiraStatistik(); simpanData();" />
                 </div>
                 <div>
                     <label>Markah/Soalan</label>
-                    <input type="number" min="1" placeholder="5" oninput="kiraStatistik()" />
+                    <input type="number" min="1" placeholder="5" oninput="kiraStatistik(); simpanData();" />
                 </div>
                 <div>
                     <label>Tahap Kesukaran</label>
-                    <select onchange="kiraStatistik()">
+                    <select onchange="kiraStatistik(); simpanData();">
                         <option value="Rendah">Rendah</option>
                         <option value="Sederhana">Sederhana</option>
                         <option value="Tinggi">Tinggi</option>
                     </select>
                 </div>
                 <div>
-                    <button class="remove-btn" onclick="hapusBarisIni(this)">✕ Buang</button>
+                    <button class="remove-btn" onclick="hapusBarisIni(this); simpanData();">✕ Buang</button>
                 </div>
             </div>
         `;
-
         // Masukkan nilai dari card terakhir ke card baru
         const newInputs = newCard.querySelectorAll("input, select");
         for (let i = 0; i < inputs.length && i < newInputs.length; i++) {
@@ -427,37 +661,80 @@
                 newInputs[i].value = inputs[i].value;
             }
         }
-
         // Tambah card baru ke senarai
         senaraiTopik.appendChild(newCard);
+        
+        // Tambah auto-save untuk input dalam card baru
+        newInputs.forEach(input => {
+            input.addEventListener('input', simpanData);
+            input.addEventListener('change', simpanData);
+        });
+        
         kiraStatistik(); // Kira semula statistik
+        simpanData(); // Simpan data selepas menyalin topik
     }
-
-
     function hapusBarisIni(btn) {
       btn.closest('.topik-card').remove();
       kiraStatistik();
+      simpanData(); // Simpan data selepas membuang card
+    }
+    function hapusSoalan(btn) {
+      btn.closest('.soalan-card').remove();
+      kiraStatistik();
+      updateSoalanNumbering();
+      simpanData(); // Simpan data selepas membuang soalan
+    }
+    function updateSoalanNumbering() {
+      const cards = document.querySelectorAll("#senaraiSoalan .soalan-card");
+      cards.forEach((card, index) => {
+        const header = card.querySelector('.soalan-card-header h3');
+        header.textContent = `Soalan ${index + 1}`;
+        // Update ID container dan fungsi onclick untuk butang
+        const container = card.querySelector('[id^="senaraiTopikSoalan"]');
+        if (container) {
+            container.id = `senaraiTopikSoalan${index + 1}`;
+        }
+        const tambahBtn = card.querySelector('.topik-actions .btn-primary');
+        const salinBtn = card.querySelector('.topik-actions .btn-warning');
+        if (tambahBtn) tambahBtn.setAttribute('onclick', `tambahTopikUntukSoalan(${index + 1})`);
+        if (salinBtn) salinBtn.setAttribute('onclick', `salinTopikTerakhirUntukSoalan(${index + 1})`);
+      });
+      window.soalanCounter = cards.length;
+      simpanData(); // Simpan data selepas mengemas kini penomboran
     }
     // Kira total & peratus berdasarkan MARKAH
     function kiraStatistik() {
       let totalSoalan = 0;
       let totalMarkah = 0;
+      let totalWajib = 0;
+      let totalPilihan = 0;
       let markahByLevel = { Rendah: 0, Sederhana: 0, Tinggi: 0 };
-      document.querySelectorAll("#senaraiTopik .topik-card").forEach(card => {
-        const inputs = card.querySelectorAll("input, select");
-        const topik = inputs[0].value.trim();
-        const bil = parseInt(inputs[2].value) || 0;
-        const markahPerSoalan = parseInt(inputs[3].value) || 0;
-        const tahap = inputs[4].value;
-        if (!topik || bil <= 0 || markahPerSoalan <= 0) return;
-        const jumlahMarkah = bil * markahPerSoalan;
-        totalSoalan += bil;
-        totalMarkah += jumlahMarkah;
-        markahByLevel[tahap] += jumlahMarkah;
+      document.querySelectorAll("#senaraiSoalan .soalan-card").forEach(soalanCard => {
+        const headerSelect = soalanCard.querySelector('.soalan-card-header select');
+        const jenis = headerSelect.value;
+        soalanCard.querySelectorAll(".topik-card").forEach(card => {
+            const inputs = card.querySelectorAll(".topik-grid input, .topik-grid select");
+            const topik = inputs[0].value.trim();
+            const bil = parseInt(inputs[2].value) || 0;
+            const markahPerSoalan = parseInt(inputs[3].value) || 0;
+            const tahap = inputs[4].value;
+            if (!topik || bil <= 0 || markahPerSoalan <= 0) return;
+            const jumlahMarkah = bil * markahPerSoalan;
+            totalSoalan += bil;
+            totalMarkah += jumlahMarkah;
+            if (jenis === "Wajib") {
+              totalWajib += bil;
+            } else {
+              totalPilihan += bil;
+            }
+            markahByLevel[tahap] += jumlahMarkah;
+        });
       });
       // Papar total
       document.getElementById("totalSoalan").textContent = totalSoalan;
       document.getElementById("totalMarkah").textContent = totalMarkah;
+      document.getElementById("totalWajib").textContent = totalWajib;
+      document.getElementById("totalPilihan").textContent = totalPilihan;
       // Kira peratus berdasarkan markah
       const rendahPeratus = totalMarkah ? Math.round((markahByLevel.Rendah / totalMarkah) * 100) : 0;
       const sederhanaPeratus = totalMarkah ? Math.round((markahByLevel.Sederhana / totalMarkah) * 100) : 0;
@@ -469,7 +746,7 @@
       // Papar info
       const info = document.getElementById("kesukaranInfo");
       if (totalMarkah === 0) {
-        info.innerHTML = "Belum ada topik ditambah.";
+        info.innerHTML = "Belum ada soalan ditambah.";
       } else {
         info.innerHTML = `
           🔹 Rendah: ${markahByLevel.Rendah} markah (${rendahPeratus}%)<br>
@@ -478,17 +755,15 @@
         `;
       }
     }
-
     // Fungsi untuk mendapatkan nilai bentuk soalan untuk tujuan sorting
     function getBentukSoalanValue(bentuk) {
         switch(bentuk) {
             case 'Objektif': return 1;
             case 'Struktur': return 2;
             case 'Esei': return 3;
-            default: return 4; // Untuk nilai lain, jika ada
+            default: return 4;
         }
     }
-
     function janaJSU() {
       const namaKursus = document.getElementById('namaKursus').value.trim();
       const kodKursus = document.getElementById('kodKursus').value.trim();
@@ -499,50 +774,51 @@
         alert("Sila lengkapkan semua maklumat kursus.");
         return;
       }
-      const topikInputs = document.querySelectorAll("#senaraiTopik .topik-card");
-      if (topikInputs.length === 0) {
-        alert("Sila tambah sekurang-kurangnya satu topik.");
+      const soalanInputs = document.querySelectorAll("#senaraiSoalan .soalan-card");
+      if (soalanInputs.length === 0) {
+        alert("Sila tambah sekurang-kurangnya satu soalan.");
         return;
       }
-
       // 1. Kumpulkan data dari input
       let dataJSU = [];
-      topikInputs.forEach(card => {
-        const inputs = card.querySelectorAll("input, select");
-        const topik = inputs[0].value.trim();
-        const bentuk = inputs[1].value;
-        const bil = parseInt(inputs[2].value) || 0;
-        const markah = parseInt(inputs[3].value) || 0;
-        const kesukaran = inputs[4].value;
-        const jumlah = bil * markah;
-
-        if (!topik || bil <= 0 || markah <= 0) {
-          alert("Sila isi topik, bilangan soalan, dan markah dengan betul.");
-          throw new Error("Input tidak sah");
-        }
-
-        dataJSU.push({
-            topik: topik,
-            bentuk: bentuk,
-            bil: bil,
-            markah: markah,
-            kesukaran: kesukaran,
-            jumlah: jumlah
+      soalanInputs.forEach((soalanCard, soalanIndex) => {
+        const headerSelect = soalanCard.querySelector('.soalan-card-header select');
+        const jenis = headerSelect.value;
+        const soalanNum = soalanIndex + 1;
+        soalanCard.querySelectorAll(".topik-card").forEach((card, topikIndex) => {
+            const inputs = card.querySelectorAll(".topik-grid input, .topik-grid select");
+            const topik = inputs[0].value.trim();
+            const bentuk = inputs[1].value;
+            const bil = parseInt(inputs[2].value) || 0;
+            const markah = parseInt(inputs[3].value) || 0;
+            const kesukaran = inputs[4].value;
+            const jumlah = bil * markah;
+            if (!topik || bil <= 0 || markah <= 0) {
+              alert(`Sila isi topik, bilangan soalan, dan markah dengan betul untuk Soalan ${soalanNum}, Topik ${topikIndex + 1}`);
+              throw new Error("Input tidak sah");
+            }
+            dataJSU.push({
+                soalan: `Soalan ${soalanNum}`,
+                jenis: jenis,
+                topik: topik,
+                bentuk: bentuk,
+                bil: bil,
+                markah: markah,
+                kesukaran: kesukaran,
+                jumlah: jumlah
+            });
         });
       });
-
       // 2. Susun data mengikut Bentuk Soalan (Objektif, Struktur, Esei) kemudian Topik
       dataJSU.sort((a, b) => {
         const bentukAValue = getBentukSoalanValue(a.bentuk);
         const bentukBValue = getBentukSoalanValue(b.bentuk);
-
         if (bentukAValue !== bentukBValue) {
             return bentukAValue - bentukBValue; // Susun mengikut nilai bentuk soalan
         } else {
             return a.topik.localeCompare(b.topik); // Susun mengikut abjad topik jika bentuk sama
         }
       });
-
       // 3. Bina output HTML berdasarkan data yang telah disusun
       let output = `
         <h3 style="color: #2c7be5;">📘 Jadual Spesifikasi Ujian</h3>
@@ -555,6 +831,8 @@
       output += `
         <table>
           <tr>
+            <th>No. Soalan</th>
+            <th>Jenis</th>
             <th>Topik</th>
             <th>Bentuk Soalan</th>
             <th>Bil. Soalan</th>
@@ -563,15 +841,25 @@
             <th>Jumlah Markah</th>
           </tr>
       `;
-
       let totalSoalan = 0;
       let totalMarkah = 0;
-
+      let totalWajib = 0;
+      let totalPilihan = 0;
       dataJSU.forEach(item => {
         totalSoalan += item.bil;
         totalMarkah += item.jumlah;
+        if (item.jenis === "Wajib") {
+          totalWajib += item.bil;
+        } else {
+          totalPilihan += item.bil;
+        }
+        const jenisBadge = item.jenis === "Wajib" ? 
+          '<span class="wajib-badge">Wajib</span>' : 
+          '<span class="pilihan-badge">Pilihan</span>';
         output += `
           <tr>
+            <td>${item.soalan}</td>
+            <td>${jenisBadge}</td>
             <td style="text-align: left;">${item.topik}</td>
             <td>${item.bentuk}</td>
             <td>${item.bil}</td>
@@ -581,16 +869,22 @@
           </tr>
         `;
       });
-
       output += `
         <tr style="font-weight: bold; background-color: #f1f3f6;">
-          <td colspan="2">Jumlah</td>
+          <td colspan="4">Jumlah</td>
           <td>${totalSoalan}</td>
           <td>-</td>
           <td>-</td>
           <td>${totalMarkah}</td>
         </tr>
       </table>
+      `;
+      // Papar ringkasan tambahan
+      output += `
+        <p><strong>Ringkasan:</strong> 
+          Wajib: ${totalWajib} soalan, 
+          Pilihan: ${totalPilihan} soalan
+        </p>
       `;
       // Ambil peratus berdasarkan markah
       const rendah = document.getElementById("rendahPeratus").value;
@@ -650,6 +944,8 @@
               table { border-collapse: collapse; width: 100%; }
               th, td { border: 1px solid #000; padding: 8px; text-align: center; }
               th { background-color: #e9ecef; }
+              .wajib-badge { background-color: #28a745; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+              .pilihan-badge { background-color: #ffc107; color: #212529; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
             </style>
           </head>
           <body>${output}</body>
@@ -664,7 +960,7 @@
     function muatTurunExcel() {
       const table = document.querySelector("#output table");
       if (!table) return alert("Tiada jadual untuk dimuat turun.");
-      const wb = XLSX.utils.table_to_book(table, { sheet: "Topik" });
+      const wb = XLSX.utils.table_to_book(table, { sheet: "Soalan" });
       XLSX.writeFile(wb, `JSU_${kodKursus.value || 'Dokumen'}.xlsx`);
     }
     function cetakJSU() {
@@ -682,6 +978,8 @@
               .signature { margin-top: 40px; display: flex; justify-content: space-between; }
               .signature div { width: 45%; text-align: center; }
               .signature .line { border-bottom: 1px solid #000; padding: 5px 0; font-style: italic; }
+              .wajib-badge { background-color: #28a745; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+              .pilihan-badge { background-color: #ffc107; color: #212529; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
             </style>
           </head>
           <body>${output}</body>
@@ -692,12 +990,17 @@
       win.print();
       win.close();
     }
-    // Auto-kira pada mula
+    // Auto-kira pada mula dan setup auto-save
     window.onload = function () {
-      tambahTopik();
+      tambahSoalan();
       kiraStatistik();
+      setupAutoSave();
+      
+      // Cuba muat data yang disimpan
+      if (muatData()) {
+          console.log('Data dimuat dari localStorage');
+      }
     };
   </script>
 </body>
 </html>
-```
