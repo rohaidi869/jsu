@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="ms">
 <head>
@@ -11,6 +12,7 @@
       --primary-dark: #1a68d1;
       --danger: #e63946;
       --success: #28a745;
+      --warning: #ffc107; /* For copy button */
       --gray: #6c757d;
       --dark: #343a40;
       --light: #f8f9fa;
@@ -120,6 +122,13 @@
     .btn-success:hover {
       background-color: #218838;
     }
+    .btn-warning { /* Copy button style */
+      background-color: var(--warning);
+      color: #212529; /* Darker text for contrast */
+    }
+    .btn-warning:hover {
+      background-color: #e0a800;
+    }
     .btn-sm {
       padding: 8px 12px;
       font-size: 13px;
@@ -224,12 +233,10 @@
   </style>
 </head>
 <body>
-
   <div class="container">
     <header>
       <!-- Logo Kolej -->
       <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRT2c9MkwQOnCwNRy5xBVmuvdK_nSQmmWGcVDRKIWB-k8pWfI4zjUJVfYcLsr4NXpc99FM&usqp=CAU" alt="Logo KIAS" />
-
       <!-- Maklumat Institusi -->
       <div>
         <p style="font-size: 16px; font-weight: 500;">
@@ -241,20 +248,16 @@
         </p>
       </div>
     </header>
-
     <div class="content">
       <!-- Maklumat Kursus -->
       <div class="section">
         <h2>📝 Maklumat Kursus</h2>
         <label>Nama Kursus</label>
         <input type="text" id="namaKursus" placeholder="Contoh: Asas Pemrograman" />
-
         <label>Kod Kursus</label>
         <input type="text" id="kodKursus" placeholder="Contoh: BAK 3223" />
-
         <label>Semester Pengajian</label>
         <input type="text" id="semester" placeholder="Contoh: 2025/2026 (1)" />
-
         <label>Tahun Pengajian</label>
         <select id="tahunPengajian">
           <option value="">Pilih Tahun</option>
@@ -263,31 +266,29 @@
           <option value="3">Tahun 3</option>
           <option value="4">Tahun 4</option>
         </select>
-
         <label>Penyataan HPK</label>
         <textarea id="hpk" rows="3" placeholder="Contoh: Murid dapat mengenal pasti struktur asas HTML."></textarea>
       </div>
-
       <!-- Topik dan Item -->
       <div class="section">
         <h2>📌 Topik dan Item Soalan</h2>
         <div id="senaraiTopik"></div>
-        <button class="btn btn-primary btn-sm" onclick="tambahTopik()">➕ Tambah Topik</button>
-
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="btn btn-primary btn-sm" onclick="tambahTopik()">➕ Tambah Topik</button>
+            <button class="btn btn-warning btn-sm" onclick="salinTopikTerakhir()" title="Salin maklumat dari baris terakhir">📋 Salin Topik Terakhir</button>
+        </div>
         <!-- Paparan Total Soalan & Markah -->
         <div class="totals-display">
           <div>Total Soalan: <span id="totalSoalan">0</span></div>
           <div>Total Markah: <span id="totalMarkah">0</span></div>
         </div>
       </div>
-
       <!-- Peratus Tahap Kesukaran (Auto-Kira Berdasarkan MARKAH) -->
       <div class="section">
         <h2>📊 Peratus Tahap Kesukaran (Auto-Kira)</h2>
         <p style="font-size: 14px; color: #555;">
           Peratus dikira secara automatik berdasarkan <strong>jumlah markah</strong> mengikut tahap kesukaran.
         </p>
-
         <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 10px;">
           <div style="flex: 1; min-width: 140px;">
             <label>Rendah</label>
@@ -302,14 +303,12 @@
             <input type="number" id="tinggiPeratus" value="0" readonly />
           </div>
         </div>
-
         <!-- Paparan jumlah markah mengikut tahap -->
         <div class="kesukaran-display">
           <strong>Distribusi Markah:</strong>
           <div id="kesukaranInfo">Belum ada topik ditambah.</div>
         </div>
       </div>
-
       <!-- Butang Aksi -->
       <div class="action-buttons">
         <button class="btn btn-primary" onclick="janaJSU()">👁️ Papar JSU</button>
@@ -317,15 +316,12 @@
         <button class="btn btn-success" onclick="muatTurunExcel()">📊 Muat Turun Excel</button>
         <button class="btn btn-primary" onclick="cetakJSU()">🖨️ Cetak</button>
       </div>
-
       <!-- Output -->
       <div id="output"></div>
     </div>
   </div>
-
   <!-- Excel Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
   <script>
     function tambahTopik() {
       const card = document.createElement('div');
@@ -369,46 +365,107 @@
       setTimeout(kiraStatistik, 10);
     }
 
+    function salinTopikTerakhir() {
+        const senaraiTopik = document.getElementById('senaraiTopik');
+        const topikCards = senaraiTopik.querySelectorAll('.topik-card');
+
+        if (topikCards.length === 0) {
+            alert("Tiada topik untuk disalin. Sila tambah topik terlebih dahulu.");
+            return;
+        }
+
+        // Dapatkan card terakhir
+        const lastCard = topikCards[topikCards.length - 1];
+        const inputs = lastCard.querySelectorAll("input, select");
+
+        // Cipta card baru
+        const newCard = document.createElement('div');
+        newCard.className = 'topik-card';
+        newCard.innerHTML = `
+            <div class="topik-grid">
+                <div>
+                    <label>Topik</label>
+                    <input type="text" placeholder="Contoh: HTML Asas" required />
+                </div>
+                <div>
+                    <label>Bentuk Soalan</label>
+                    <select onchange="kiraStatistik()">
+                        <option value="Objektif">Objektif</option>
+                        <option value="Struktur">Struktur</option>
+                        <option value="Esei">Esei</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Bil. Soalan</label>
+                    <input type="number" min="1" placeholder="3" oninput="kiraStatistik()" />
+                </div>
+                <div>
+                    <label>Markah/Soalan</label>
+                    <input type="number" min="1" placeholder="5" oninput="kiraStatistik()" />
+                </div>
+                <div>
+                    <label>Tahap Kesukaran</label>
+                    <select onchange="kiraStatistik()">
+                        <option value="Rendah">Rendah</option>
+                        <option value="Sederhana">Sederhana</option>
+                        <option value="Tinggi">Tinggi</option>
+                    </select>
+                </div>
+                <div>
+                    <button class="remove-btn" onclick="hapusBarisIni(this)">✕ Buang</button>
+                </div>
+            </div>
+        `;
+
+        // Masukkan nilai dari card terakhir ke card baru
+        const newInputs = newCard.querySelectorAll("input, select");
+        for (let i = 0; i < inputs.length && i < newInputs.length; i++) {
+            // Salin nilai dari input/text, pilih nilai dari select
+            if (inputs[i].type === 'text' || inputs[i].type === 'number') {
+                newInputs[i].value = inputs[i].value;
+            } else if (inputs[i].tagName === 'SELECT') {
+                newInputs[i].value = inputs[i].value;
+            }
+        }
+
+        // Tambah card baru ke senarai
+        senaraiTopik.appendChild(newCard);
+        kiraStatistik(); // Kira semula statistik
+    }
+
+
     function hapusBarisIni(btn) {
       btn.closest('.topik-card').remove();
       kiraStatistik();
     }
-
     // Kira total & peratus berdasarkan MARKAH
     function kiraStatistik() {
       let totalSoalan = 0;
       let totalMarkah = 0;
       let markahByLevel = { Rendah: 0, Sederhana: 0, Tinggi: 0 };
-
       document.querySelectorAll("#senaraiTopik .topik-card").forEach(card => {
         const inputs = card.querySelectorAll("input, select");
         const topik = inputs[0].value.trim();
         const bil = parseInt(inputs[2].value) || 0;
         const markahPerSoalan = parseInt(inputs[3].value) || 0;
         const tahap = inputs[4].value;
-
         if (!topik || bil <= 0 || markahPerSoalan <= 0) return;
-
         const jumlahMarkah = bil * markahPerSoalan;
         totalSoalan += bil;
         totalMarkah += jumlahMarkah;
         markahByLevel[tahap] += jumlahMarkah;
       });
-
       // Papar total
       document.getElementById("totalSoalan").textContent = totalSoalan;
       document.getElementById("totalMarkah").textContent = totalMarkah;
-
       // Kira peratus berdasarkan markah
       const rendahPeratus = totalMarkah ? Math.round((markahByLevel.Rendah / totalMarkah) * 100) : 0;
       const sederhanaPeratus = totalMarkah ? Math.round((markahByLevel.Sederhana / totalMarkah) * 100) : 0;
       const tinggiPeratus = totalMarkah ? Math.round((markahByLevel.Tinggi / totalMarkah) * 100) : 0;
-
       // Papar dalam input
       document.getElementById("rendahPeratus").value = rendahPeratus;
       document.getElementById("sederhanaPeratus").value = sederhanaPeratus;
       document.getElementById("tinggiPeratus").value = tinggiPeratus;
-
       // Papar info
       const info = document.getElementById("kesukaranInfo");
       if (totalMarkah === 0) {
@@ -422,24 +479,71 @@
       }
     }
 
+    // Fungsi untuk mendapatkan nilai bentuk soalan untuk tujuan sorting
+    function getBentukSoalanValue(bentuk) {
+        switch(bentuk) {
+            case 'Objektif': return 1;
+            case 'Struktur': return 2;
+            case 'Esei': return 3;
+            default: return 4; // Untuk nilai lain, jika ada
+        }
+    }
+
     function janaJSU() {
       const namaKursus = document.getElementById('namaKursus').value.trim();
       const kodKursus = document.getElementById('kodKursus').value.trim();
       const semester = document.getElementById('semester').value.trim();
       const tahun = document.getElementById('tahunPengajian').value;
       const hpk = document.getElementById('hpk').value.trim();
-
       if (!namaKursus || !kodKursus || !semester || !tahun || !hpk) {
         alert("Sila lengkapkan semua maklumat kursus.");
         return;
       }
-
       const topikInputs = document.querySelectorAll("#senaraiTopik .topik-card");
       if (topikInputs.length === 0) {
         alert("Sila tambah sekurang-kurangnya satu topik.");
         return;
       }
 
+      // 1. Kumpulkan data dari input
+      let dataJSU = [];
+      topikInputs.forEach(card => {
+        const inputs = card.querySelectorAll("input, select");
+        const topik = inputs[0].value.trim();
+        const bentuk = inputs[1].value;
+        const bil = parseInt(inputs[2].value) || 0;
+        const markah = parseInt(inputs[3].value) || 0;
+        const kesukaran = inputs[4].value;
+        const jumlah = bil * markah;
+
+        if (!topik || bil <= 0 || markah <= 0) {
+          alert("Sila isi topik, bilangan soalan, dan markah dengan betul.");
+          throw new Error("Input tidak sah");
+        }
+
+        dataJSU.push({
+            topik: topik,
+            bentuk: bentuk,
+            bil: bil,
+            markah: markah,
+            kesukaran: kesukaran,
+            jumlah: jumlah
+        });
+      });
+
+      // 2. Susun data mengikut Bentuk Soalan (Objektif, Struktur, Esei) kemudian Topik
+      dataJSU.sort((a, b) => {
+        const bentukAValue = getBentukSoalanValue(a.bentuk);
+        const bentukBValue = getBentukSoalanValue(b.bentuk);
+
+        if (bentukAValue !== bentukBValue) {
+            return bentukAValue - bentukBValue; // Susun mengikut nilai bentuk soalan
+        } else {
+            return a.topik.localeCompare(b.topik); // Susun mengikut abjad topik jika bentuk sama
+        }
+      });
+
+      // 3. Bina output HTML berdasarkan data yang telah disusun
       let output = `
         <h3 style="color: #2c7be5;">📘 Jadual Spesifikasi Ujian</h3>
         <p><strong>Nama Kursus:</strong> ${namaKursus}</p>
@@ -448,7 +552,6 @@
         <p><strong>Tahun Pengajian:</strong> Tahun ${tahun}</p>
         <p><strong>HPK:</strong> "${hpk}"</p>
       `;
-
       output += `
         <table>
           <tr>
@@ -464,31 +567,17 @@
       let totalSoalan = 0;
       let totalMarkah = 0;
 
-      topikInputs.forEach(card => {
-        const inputs = card.querySelectorAll("input, select");
-        const topik = inputs[0].value.trim();
-        const bentuk = inputs[1].value;
-        const bil = parseInt(inputs[2].value) || 0;
-        const markah = parseInt(inputs[3].value) || 0;
-        const kesukaran = inputs[4].value;
-        const jumlah = bil * markah;
-
-        if (!topik || bil <= 0 || markah <= 0) {
-          alert("Sila isi topik, bilangan soalan, dan markah dengan betul.");
-          throw new Error("Input tidak sah");
-        }
-
-        totalSoalan += bil;
-        totalMarkah += jumlah;
-
+      dataJSU.forEach(item => {
+        totalSoalan += item.bil;
+        totalMarkah += item.jumlah;
         output += `
           <tr>
-            <td style="text-align: left;">${topik}</td>
-            <td>${bentuk}</td>
-            <td>${bil}</td>
-            <td>${markah}</td>
-            <td>${kesukaran}</td>
-            <td>${jumlah}</td>
+            <td style="text-align: left;">${item.topik}</td>
+            <td>${item.bentuk}</td>
+            <td>${item.bil}</td>
+            <td>${item.markah}</td>
+            <td>${item.kesukaran}</td>
+            <td>${item.jumlah}</td>
           </tr>
         `;
       });
@@ -503,12 +592,10 @@
         </tr>
       </table>
       `;
-
       // Ambil peratus berdasarkan markah
       const rendah = document.getElementById("rendahPeratus").value;
       const sederhana = document.getElementById("sederhanaPeratus").value;
       const tinggi = document.getElementById("tinggiPeratus").value;
-
       output += `
         <p><strong>Peratus Tahap Kesukaran (mengikut markah):</strong> 
           Rendah: ${rendah}%, 
@@ -516,7 +603,6 @@
           Tinggi: ${tinggi}%
         </p>
       `;
-
       // Tanda Tangan
       output += `
         <div style="margin-top: 40px; display: flex; justify-content: space-between; font-size: 14px;">
@@ -536,7 +622,6 @@
           </div>
         </div>
       `;
-
       // Tambahkan logo dan alamat untuk muat turun/cetak
       output = `
         <div style="text-align: center;">
@@ -551,10 +636,8 @@
         </div>
         ${output}
       `;
-
       document.getElementById('output').innerHTML = output;
     }
-
     function muatTurunWord() {
       const output = document.getElementById('output').innerHTML;
       const html = `
@@ -578,14 +661,12 @@
       link.download = `JSU_${kodKursus.value || 'Dokumen'}.doc`;
       link.click();
     }
-
     function muatTurunExcel() {
       const table = document.querySelector("#output table");
       if (!table) return alert("Tiada jadual untuk dimuat turun.");
       const wb = XLSX.utils.table_to_book(table, { sheet: "Topik" });
       XLSX.writeFile(wb, `JSU_${kodKursus.value || 'Dokumen'}.xlsx`);
     }
-
     function cetakJSU() {
       const output = document.getElementById('output').innerHTML;
       const win = window.open('', '', 'width=900,height=700');
@@ -611,7 +692,6 @@
       win.print();
       win.close();
     }
-
     // Auto-kira pada mula
     window.onload = function () {
       tambahTopik();
@@ -620,3 +700,4 @@
   </script>
 </body>
 </html>
+```
