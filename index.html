@@ -264,6 +264,20 @@
       margin-top: 10px;
       flex-wrap: wrap;
     }
+    .pilihan-inputs {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+      padding: 15px;
+      background: #fff3cd;
+      border-radius: 8px;
+      border: 1px solid #ffeaa7;
+    }
+    .pilihan-inputs > div {
+      flex: 1;
+      min-width: 200px;
+    }
     .reset-section {
       margin-top: 20px;
       padding-top: 15px;
@@ -277,7 +291,7 @@
       header img {
         margin-bottom: 10px;
       }
-      .topik-grid, .totals-display {
+      .topik-grid, .totals-display, .pilihan-inputs {
         flex-direction: column;
       }
       .action-buttons {
@@ -323,6 +337,32 @@
         <label>Penyataan HPK</label>
         <textarea id="hpk" rows="3" placeholder="Contoh: Murid dapat mengenal pasti struktur asas HTML."></textarea>
       </div>
+      
+      <!-- Soalan Pilihan - Input untuk jumlah soalan dan format -->
+      <div class="section">
+        <h2>📊 Tetapan Soalan Pilihan</h2>
+        <div class="pilihan-inputs">
+          <div>
+            <label>Jumlah Soalan Pilihan yang Disediakan</label>
+            <input type="number" id="jumlahSoalanPilihanDisediakan" min="0" value="0" oninput="kiraStatistik()" />
+          </div>
+          <div>
+            <label>Jumlah Soalan Pilihan yang Perlu Dijawab</label>
+            <input type="number" id="jumlahSoalanPilihanDijawab" min="0" value="0" oninput="kiraStatistik()" />
+          </div>
+          <div>
+            <label>Format dan Bentuk Soalan</label>
+            <select id="formatSoalan" onchange="simpanData()">
+              <option value="Format 1">Format 1</option>
+              <option value="Format 2">Format 2</option>
+              <option value="Format 3">Format 3</option>
+              <option value="Format 4">Format 4</option>
+              <option value="Format 5">Format 5</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      
       <!-- Soalan Wajib/Pilihan -->
       <div class="section">
         <h2>📌 Soalan Wajib/Pilihan</h2>
@@ -336,11 +376,12 @@
           <div>Pilihan: <span id="totalPilihan">0</span></div>
         </div>
       </div>
+      
       <!-- Peratus Tahap Kesukaran (Auto-Kira Berdasarkan MARKAH) -->
       <div class="section">
         <h2>📊 Peratus Tahap Kesukaran (Auto-Kira)</h2>
         <p style="font-size: 14px; color: #555;">
-          Peratus dikira secara automatik berdasarkan <strong>jumlah markah</strong> mengikut tahap kesukaran.
+          Peratus dikira secara automatik berdasarkan <strong>jumlah markah</strong> mengikut tahap kesukaran untuk soalan wajib dan soalan pilihan yang perlu dijawab.
         </p>
         <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 10px;">
           <div style="flex: 1; min-width: 140px;">
@@ -362,6 +403,7 @@
           <div id="kesukaranInfo">Belum ada soalan ditambah.</div>
         </div>
       </div>
+      
       <!-- Butang Aksi -->
       <div class="action-buttons">
         <button class="btn btn-primary" onclick="janaJSU()">👁️ Papar JSU</button>
@@ -392,6 +434,9 @@
             semester: document.getElementById('semester').value,
             tahunPengajian: document.getElementById('tahunPengajian').value,
             hpk: document.getElementById('hpk').value,
+            jumlahSoalanPilihanDisediakan: document.getElementById('jumlahSoalanPilihanDisediakan').value,
+            jumlahSoalanPilihanDijawab: document.getElementById('jumlahSoalanPilihanDijawab').value,
+            formatSoalan: document.getElementById('formatSoalan').value,
             soalanCards: []
         };
 
@@ -441,6 +486,9 @@
             document.getElementById('semester').value = data.semester || '';
             document.getElementById('tahunPengajian').value = data.tahunPengajian || '';
             document.getElementById('hpk').value = data.hpk || '';
+            document.getElementById('jumlahSoalanPilihanDisediakan').value = data.jumlahSoalanPilihanDisediakan || '0';
+            document.getElementById('jumlahSoalanPilihanDijawab').value = data.jumlahSoalanPilihanDijawab || '0';
+            document.getElementById('formatSoalan').value = data.formatSoalan || 'Format 1';
             
             // Kosongkan senarai soalan sedia ada
             document.getElementById('senaraiSoalan').innerHTML = '';
@@ -497,6 +545,9 @@
             document.getElementById('semester').value = '';
             document.getElementById('tahunPengajian').value = '';
             document.getElementById('hpk').value = '';
+            document.getElementById('jumlahSoalanPilihanDisediakan').value = '0';
+            document.getElementById('jumlahSoalanPilihanDijawab').value = '0';
+            document.getElementById('formatSoalan').value = 'Format 1';
             
             // Kosongkan senarai soalan
             document.getElementById('senaraiSoalan').innerHTML = '';
@@ -513,14 +564,15 @@
     // Setup auto-save listeners
     function setupAutoSave() {
         // Auto-save untuk input maklumat kursus
-        const inputs = document.querySelectorAll('#namaKursus, #kodKursus, #semester, #tahunPengajian, #hpk');
+        const inputs = document.querySelectorAll('#namaKursus, #kodKursus, #semester, #tahunPengajian, #hpk, #jumlahSoalanPilihanDisediakan, #jumlahSoalanPilihanDijawab');
         inputs.forEach(input => {
             input.addEventListener('input', simpanData);
             input.addEventListener('change', simpanData);
         });
         
-        // Auto-save untuk dropdown tahun pengajian
+        // Auto-save untuk dropdown tahun pengajian dan format soalan
         document.getElementById('tahunPengajian').addEventListener('change', simpanData);
+        document.getElementById('formatSoalan').addEventListener('change', simpanData);
     }
 
     let soalanCounter = 0;
@@ -702,59 +754,7 @@
       window.soalanCounter = cards.length;
       simpanData(); // Simpan data selepas mengemas kini penomboran
     }
-    // Kira total & peratus berdasarkan MARKAH
-    function kiraStatistik() {
-      let totalSoalan = 0;
-      let totalMarkah = 0;
-      let totalWajib = 0;
-      let totalPilihan = 0;
-      let markahByLevel = { Rendah: 0, Sederhana: 0, Tinggi: 0 };
-      document.querySelectorAll("#senaraiSoalan .soalan-card").forEach(soalanCard => {
-        const headerSelect = soalanCard.querySelector('.soalan-card-header select');
-        const jenis = headerSelect.value;
-        soalanCard.querySelectorAll(".topik-card").forEach(card => {
-            const inputs = card.querySelectorAll(".topik-grid input, .topik-grid select");
-            const topik = inputs[0].value.trim();
-            const bil = parseInt(inputs[2].value) || 0;
-            const markahPerSoalan = parseInt(inputs[3].value) || 0;
-            const tahap = inputs[4].value;
-            if (!topik || bil <= 0 || markahPerSoalan <= 0) return;
-            const jumlahMarkah = bil * markahPerSoalan;
-            totalSoalan += bil;
-            totalMarkah += jumlahMarkah;
-            if (jenis === "Wajib") {
-              totalWajib += bil;
-            } else {
-              totalPilihan += bil;
-            }
-            markahByLevel[tahap] += jumlahMarkah;
-        });
-      });
-      // Papar total
-      document.getElementById("totalSoalan").textContent = totalSoalan;
-      document.getElementById("totalMarkah").textContent = totalMarkah;
-      document.getElementById("totalWajib").textContent = totalWajib;
-      document.getElementById("totalPilihan").textContent = totalPilihan;
-      // Kira peratus berdasarkan markah
-      const rendahPeratus = totalMarkah ? Math.round((markahByLevel.Rendah / totalMarkah) * 100) : 0;
-      const sederhanaPeratus = totalMarkah ? Math.round((markahByLevel.Sederhana / totalMarkah) * 100) : 0;
-      const tinggiPeratus = totalMarkah ? Math.round((markahByLevel.Tinggi / totalMarkah) * 100) : 0;
-      // Papar dalam input
-      document.getElementById("rendahPeratus").value = rendahPeratus;
-      document.getElementById("sederhanaPeratus").value = sederhanaPeratus;
-      document.getElementById("tinggiPeratus").value = tinggiPeratus;
-      // Papar info
-      const info = document.getElementById("kesukaranInfo");
-      if (totalMarkah === 0) {
-        info.innerHTML = "Belum ada soalan ditambah.";
-      } else {
-        info.innerHTML = `
-          🔹 Rendah: ${markahByLevel.Rendah} markah (${rendahPeratus}%)<br>
-          🔹 Sederhana: ${markahByLevel.Sederhana} markah (${sederhanaPeratus}%)<br>
-          🔹 Tinggi: ${markahByLevel.Tinggi} markah (${tinggiPeratus}%)
-        `;
-      }
-    }
+    
     // Fungsi untuk mendapatkan nilai bentuk soalan untuk tujuan sorting
     function getBentukSoalanValue(bentuk) {
         switch(bentuk) {
@@ -764,12 +764,154 @@
             default: return 4;
         }
     }
+    
+    // Fungsi untuk mendapatkan nilai jenis soalan untuk tujuan sorting
+    function getJenisSoalanValue(jenis) {
+        switch(jenis) {
+            case 'Wajib': return 1;
+            case 'Pilihan': return 2;
+            default: return 3;
+        }
+    }
+    
+    // Kira total & peratus berdasarkan MARKAH
+    function kiraStatistik() {
+      let totalSoalan = 0;
+      let totalMarkah = 0;
+      let totalWajib = 0;
+      let totalPilihan = 0;
+      let markahByLevel = { Rendah: 0, Sederhana: 0, Tinggi: 0 };
+      
+      // Dapatkan input soalan pilihan
+      const soalanPilihanDisediakan = parseInt(document.getElementById('jumlahSoalanPilihanDisediakan').value) || 0;
+      const soalanPilihanDijawab = parseInt(document.getElementById('jumlahSoalanPilihanDijawab').value) || 0;
+      
+      // Validasi input soalan pilihan
+      if (soalanPilihanDijawab > soalanPilihanDisediakan) {
+        document.getElementById('jumlahSoalanPilihanDijawab').value = soalanPilihanDisediakan;
+      }
+      
+      // Kumpulkan data markah untuk soalan wajib
+      document.querySelectorAll("#senaraiSoalan .soalan-card").forEach(soalanCard => {
+        const headerSelect = soalanCard.querySelector('.soalan-card-header select');
+        const jenis = headerSelect.value;
+        if (jenis === "Wajib") {
+          soalanCard.querySelectorAll(".topik-card").forEach(card => {
+            const inputs = card.querySelectorAll(".topik-grid input, .topik-grid select");
+            const topik = inputs[0].value.trim();
+            const bil = parseInt(inputs[2].value) || 0;
+            const markahPerSoalan = parseInt(inputs[3].value) || 0;
+            const tahap = inputs[4].value;
+            if (!topik || bil <= 0 || markahPerSoalan <= 0) return;
+            const jumlahMarkah = bil * markahPerSoalan;
+            totalSoalan += bil;
+            totalMarkah += jumlahMarkah;
+            totalWajib += bil;
+            markahByLevel[tahap] += jumlahMarkah;
+          });
+        } else {
+          // Kumpulkan data markah untuk soalan pilihan
+          soalanCard.querySelectorAll(".topik-card").forEach(card => {
+            const inputs = card.querySelectorAll(".topik-grid input, .topik-grid select");
+            const topik = inputs[0].value.trim();
+            const bil = parseInt(inputs[2].value) || 0;
+            const markahPerSoalan = parseInt(inputs[3].value) || 0;
+            const tahap = inputs[4].value;
+            if (!topik || bil <= 0 || markahPerSoalan <= 0) return;
+            const jumlahMarkah = bil * markahPerSoalan;
+            totalSoalan += bil;
+            totalMarkah += jumlahMarkah;
+            totalPilihan += bil;
+            // Markah pilihan tidak dimasukkan ke markahByLevel di sini, akan dikira selepas ini
+          });
+        }
+      });
+      
+      // Kira markah untuk soalan pilihan yang perlu dijawab
+      if (soalanPilihanDisediakan > 0 && soalanPilihanDijawab > 0) {
+        // Kumpulkan semua markah pilihan
+        let totalMarkahPilihanSemua = 0;
+        let totalSoalanPilihanSemua = 0;
+        let markahPilihanByLevel = { Rendah: 0, Sederhana: 0, Tinggi: 0 };
+        
+        document.querySelectorAll("#senaraiSoalan .soalan-card").forEach(soalanCard => {
+          const headerSelect = soalanCard.querySelector('.soalan-card-header select');
+          const jenis = headerSelect.value;
+          if (jenis === "Pilihan") {
+            soalanCard.querySelectorAll(".topik-card").forEach(card => {
+              const inputs = card.querySelectorAll(".topik-grid input, .topik-grid select");
+              const topik = inputs[0].value.trim();
+              const bil = parseInt(inputs[2].value) || 0;
+              const markahPerSoalan = parseInt(inputs[3].value) || 0;
+              const tahap = inputs[4].value;
+              if (!topik || bil <= 0 || markahPerSoalan <= 0) return;
+              const jumlahMarkah = bil * markahPerSoalan;
+              totalSoalanPilihanSemua += bil;
+              totalMarkahPilihanSemua += jumlahMarkah;
+              markahPilihanByLevel[tahap] += jumlahMarkah;
+            });
+          }
+        });
+        
+        // Kira markah untuk soalan pilihan yang perlu dijawab
+        if (totalSoalanPilihanSemua > 0) {
+          const markahPerSoalanPilihanDijawab = totalMarkahPilihanSemua / totalSoalanPilihanSemua * soalanPilihanDijawab;
+          
+          // Agihkan markah berdasarkan peratus tahap kesukaran
+          for (let level in markahPilihanByLevel) {
+            const peratus = markahPilihanByLevel[level] / totalMarkahPilihanSemua;
+            markahByLevel[level] += peratus * markahPerSoalanPilihanDijawab;
+          }
+        }
+      }
+      
+      // Kira jumlah markah akhir untuk pengiraan peratus
+      let totalMarkahAkhir = 0;
+      for (let level in markahByLevel) {
+        totalMarkahAkhir += markahByLevel[level];
+      }
+      
+      // Papar total
+      document.getElementById("totalSoalan").textContent = totalSoalan;
+      document.getElementById("totalMarkah").textContent = totalMarkah.toFixed(2);
+      document.getElementById("totalWajib").textContent = totalWajib;
+      document.getElementById("totalPilihan").textContent = totalPilihan;
+      
+      // Kira peratus berdasarkan markah yang perlu dijawab
+      const rendahPeratus = totalMarkahAkhir ? Math.round((markahByLevel.Rendah / totalMarkahAkhir) * 100) : 0;
+      const sederhanaPeratus = totalMarkahAkhir ? Math.round((markahByLevel.Sederhana / totalMarkahAkhir) * 100) : 0;
+      const tinggiPeratus = totalMarkahAkhir ? Math.round((markahByLevel.Tinggi / totalMarkahAkhir) * 100) : 0;
+      
+      // Papar dalam input
+      document.getElementById("rendahPeratus").value = rendahPeratus;
+      document.getElementById("sederhanaPeratus").value = sederhanaPeratus;
+      document.getElementById("tinggiPeratus").value = tinggiPeratus;
+      
+      // Papar info
+      const info = document.getElementById("kesukaranInfo");
+      if (totalMarkahAkhir === 0) {
+        info.innerHTML = "Belum ada soalan ditambah atau tiada soalan wajib/pilihan yang perlu dijawab.";
+      } else {
+        info.innerHTML = `
+          🔹 Rendah: ${markahByLevel.Rendah.toFixed(2)} markah (${rendahPeratus}%)<br>
+          🔹 Sederhana: ${markahByLevel.Sederhana.toFixed(2)} markah (${sederhanaPeratus}%)<br>
+          🔹 Tinggi: ${markahByLevel.Tinggi.toFixed(2)} markah (${tinggiPeratus}%)
+        `;
+      }
+    }
+    
     function janaJSU() {
       const namaKursus = document.getElementById('namaKursus').value.trim();
       const kodKursus = document.getElementById('kodKursus').value.trim();
       const semester = document.getElementById('semester').value.trim();
       const tahun = document.getElementById('tahunPengajian').value;
       const hpk = document.getElementById('hpk').value.trim();
+      
+      // Dapatkan input soalan pilihan dan format
+      const soalanPilihanDisediakan = parseInt(document.getElementById('jumlahSoalanPilihanDisediakan').value) || 0;
+      const soalanPilihanDijawab = parseInt(document.getElementById('jumlahSoalanPilihanDijawab').value) || 0;
+      const formatSoalan = document.getElementById('formatSoalan').value;
+      
       if (!namaKursus || !kodKursus || !semester || !tahun || !hpk) {
         alert("Sila lengkapkan semua maklumat kursus.");
         return;
@@ -809,16 +951,35 @@
             });
         });
       });
-      // 2. Susun data mengikut Bentuk Soalan (Objektif, Struktur, Esei) kemudian Topik
+      
+      // 2. Susun data mengikut:
+      // i- No. Soalan
+      // ii- Jenis (Wajib) dahulu barulah (pilihan)
+      // iii- Bentuk Soalan ( Objektif) kemudian (Struktur) dan akhir (Esei)
       dataJSU.sort((a, b) => {
+        // Susun mengikut nombor soalan dahulu
+        const soalanNumA = parseInt(a.soalan.replace("Soalan ", ""));
+        const soalanNumB = parseInt(b.soalan.replace("Soalan ", ""));
+        
+        if (soalanNumA !== soalanNumB) {
+            return soalanNumA - soalanNumB;
+        }
+        
+        // Jika nombor soalan sama, susun mengikut jenis (Wajib dulu)
+        const jenisAValue = getJenisSoalanValue(a.jenis);
+        const jenisBValue = getJenisSoalanValue(b.jenis);
+        
+        if (jenisAValue !== jenisBValue) {
+            return jenisAValue - jenisBValue;
+        }
+        
+        // Jika jenis sama, susun mengikut bentuk soalan
         const bentukAValue = getBentukSoalanValue(a.bentuk);
         const bentukBValue = getBentukSoalanValue(b.bentuk);
-        if (bentukAValue !== bentukBValue) {
-            return bentukAValue - bentukBValue; // Susun mengikut nilai bentuk soalan
-        } else {
-            return a.topik.localeCompare(b.topik); // Susun mengikut abjad topik jika bentuk sama
-        }
+        
+        return bentukAValue - bentukBValue;
       });
+      
       // 3. Bina output HTML berdasarkan data yang telah disusun
       let output = `
         <h3 style="color: #2c7be5;">📘 Jadual Spesifikasi Ujian</h3>
@@ -828,6 +989,15 @@
         <p><strong>Tahun Pengajian:</strong> Tahun ${tahun}</p>
         <p><strong>HPK:</strong> "${hpk}"</p>
       `;
+      
+      // Tambah maklumat soalan pilihan dan format jika ada
+      if (soalanPilihanDisediakan > 0) {
+        output += `
+          <p><strong>Soalan Pilihan:</strong> ${soalanPilihanDisediakan} soalan disediakan, ${soalanPilihanDijawab} soalan perlu dijawab</p>
+        `;
+      }
+      output += `<p><strong>Format dan Bentuk Soalan:</strong> ${formatSoalan}</p>`;
+      
       output += `
         <table>
           <tr>
@@ -891,7 +1061,7 @@
       const sederhana = document.getElementById("sederhanaPeratus").value;
       const tinggi = document.getElementById("tinggiPeratus").value;
       output += `
-        <p><strong>Peratus Tahap Kesukaran (mengikut markah):</strong> 
+        <p><strong>Peratus Tahap Kesukaran (mengikut markah untuk soalan wajib dan soalan pilihan yang perlu dijawab):</strong> 
           Rendah: ${rendah}%, 
           Sederhana: ${sederhana}%, 
           Tinggi: ${tinggi}%
