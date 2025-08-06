@@ -601,6 +601,73 @@
           simpanData(); // Simpan data selepas menambah soalan baru
       }, 10);
     }
+    function salinTopikTerakhir() {
+    const senaraiTopik = document.getElementById('senaraiTopik');
+    const topikCards = senaraiTopik.querySelectorAll('.topik-card');
+
+    if (topikCards.length === 0) {
+        alert("Tiada topik untuk disalin. Sila tambah topik terlebih dahulu.");
+        return;
+    }
+
+    // Dapatkan card terakhir
+    const lastCard = topikCards[topikCards.length - 1];
+    const inputs = lastCard.querySelectorAll("input, select");
+
+    // Cipta card baru
+    const newCard = document.createElement('div');
+    newCard.className = 'topik-card';
+    newCard.innerHTML = `
+        <div class="topik-grid">
+            <div>
+                <label>Topik</label>
+                <input type="text" placeholder="Contoh: HTML Asas" required />
+            </div>
+            <div>
+                <label>Bentuk Soalan</label>
+                <select onchange="kiraStatistik()">
+                    <option value="Objektif">Objektif</option>
+                    <option value="Struktur">Struktur</option>
+                    <option value="Esei">Esei</option>
+                </select>
+            </div>
+            <div>
+                <label>Bil. Soalan</label>
+                <input type="number" min="1" placeholder="3" oninput="kiraStatistik()" />
+            </div>
+            <div>
+                <label>Markah/Soalan</label>
+                <input type="number" min="1" placeholder="5" oninput="kiraStatistik()" />
+            </div>
+            <div>
+                <label>Tahap Kesukaran</label>
+                <select onchange="kiraStatistik()">
+                    <option value="Rendah">Rendah</option>
+                    <option value="Sederhana">Sederhana</option>
+                    <option value="Tinggi">Tinggi</option>
+                </select>
+            </div>
+            <div>
+                <button class="remove-btn" onclick="hapusBarisIni(this)">✕ Buang</button>
+            </div>
+        </div>
+    `;
+
+    // Masukkan nilai dari card terakhir ke card baru
+    const newInputs = newCard.querySelectorAll("input, select");
+    for (let i = 0; i < inputs.length && i < newInputs.length; i++) {
+        // Salin nilai dari input/text, pilih nilai dari select
+        if (inputs[i].type === 'text' || inputs[i].type === 'number') {
+            newInputs[i].value = inputs[i].value;
+        } else if (inputs[i].tagName === 'SELECT') {
+            newInputs[i].value = inputs[i].value;
+        }
+    }
+
+    // Tambah card baru ke senarai
+    senaraiTopik.appendChild(newCard);
+    kiraStatistik(); // Kira semula statistik
+}
     function tambahTopikUntukSoalan(soalanId) {
       const containerId = `senaraiTopikSoalan${soalanId}`;
       const card = document.createElement('div');
@@ -899,7 +966,15 @@
         `;
       }
     }
-    
+    // Fungsi untuk mendapatkan nilai bentuk soalan untuk tujuan sorting
+function getBentukSoalanValue(bentuk) {
+    switch(bentuk) {
+        case 'Objektif': return 1;
+        case 'Struktur': return 2;
+        case 'Esei': return 3;
+        default: return 4; // Untuk nilai lain, jika ada
+    }
+}
     function janaJSU() {
       const namaKursus = document.getElementById('namaKursus').value.trim();
       const kodKursus = document.getElementById('kodKursus').value.trim();
