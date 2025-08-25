@@ -448,6 +448,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script>
     const STORAGE_KEY = 'janaJSUDataWajibPilihan';
+    let soalanCounter = 0;
 
     // Fungsi untuk menyimpan data ke localStorage
     function simpanData() {
@@ -517,7 +518,7 @@
             document.getElementById('senaraiSoalan').innerHTML = '';
             
             // Reset soalan counter
-            window.soalanCounter = 0;
+            soalanCounter = 0;
             
             // Muat semula soalan cards
             data.soalanCards.forEach((soalanData, soalanIndex) => {
@@ -576,7 +577,7 @@
             
             // Kosongkan senarai soalan
             document.getElementById('senaraiSoalan').innerHTML = '';
-            window.soalanCounter = 0; // Reset global counter
+            soalanCounter = 0; // Reset global counter
             
             // Tambah satu soalan kosong
             tambahSoalan();
@@ -600,7 +601,6 @@
         document.getElementById('formatSoalan').addEventListener('change', simpanData);
     }
 
-    let soalanCounter = 0;
     function tambahSoalan() {
       soalanCounter++;
       const card = document.createElement('div');
@@ -760,7 +760,8 @@
     }
     
     function hapusSoalan(btn) {
-      btn.closest('.soalan-card').remove();
+      const soalanCard = btn.closest('.soalan-card');
+      soalanCard.remove();
       kiraStatistik();
       updateSoalanNumbering();
       simpanData(); // Simpan data selepas membuang soalan
@@ -768,20 +769,57 @@
     
     function updateSoalanNumbering() {
       const cards = document.querySelectorAll("#senaraiSoalan .soalan-card");
+      soalanCounter = cards.length;
+      
       cards.forEach((card, index) => {
         const header = card.querySelector('.soalan-card-header h3');
         header.textContent = `Soalan ${index + 1}`;
+        
         // Update ID container dan fungsi onclick untuk butang
         const container = card.querySelector('[id^="senaraiTopikSoalan"]');
         if (container) {
-            container.id = `senaraiTopikSoalan${index + 1}`;
+            const oldId = container.id;
+            const newId = `senaraiTopikSoalan${index + 1}`;
+            container.id = newId;
+            
+            // Update onclick functions for buttons
+            const tambahBtn = card.querySelector('.topik-actions .btn-primary');
+            const salinBtn = card.querySelector('.topik-actions .btn-warning');
+            
+            if (tambahBtn) {
+                tambahBtn.setAttribute('onclick', `tambahTopikUntukSoalan(${index + 1})`);
+            }
+            if (salinBtn) {
+                salinBtn.setAttribute('onclick', `salinTopikTerakhirUntukSoalan(${index + 1})`);
+            }
+            
+            // Update any existing topic cards' parent reference
+            const topicCards = container.querySelectorAll('.topik-card');
+            topicCards.forEach(topicCard => {
+                const topicInputs = topicCard.querySelectorAll('input, select');
+                topicInputs.forEach(input => {
+                    const oldOnInput = input.getAttribute('oninput');
+                    if (oldOnInput) {
+                        input.setAttribute('oninput', oldOnInput.replace(oldId, newId));
+                    }
+                    
+                    const oldOnChange = input.getAttribute('onchange');
+                    if (oldOnChange) {
+                        input.setAttribute('onchange', oldOnChange.replace(oldId, newId));
+                    }
+                });
+                
+                const removeBtn = topicCard.querySelector('.remove-btn');
+                if (removeBtn) {
+                    const oldOnClick = removeBtn.getAttribute('onclick');
+                    if (oldOnClick) {
+                        removeBtn.setAttribute('onclick', oldOnClick.replace(oldId, newId));
+                    }
+                }
+            });
         }
-        const tambahBtn = card.querySelector('.topik-actions .btn-primary');
-        const salinBtn = card.querySelector('.topik-actions .btn-warning');
-        if (tambahBtn) tambahBtn.setAttribute('onclick', `tambahTopikUntukSoalan(${index + 1})`);
-        if (salinBtn) salinBtn.setAttribute('onclick', `salinTopikTerakhirUntukSoalan(${index + 1})`);
       });
-      window.soalanCounter = cards.length;
+      
       simpanData(); // Simpan data selepas mengemas kini penomboran
     }
     
@@ -1228,14 +1266,13 @@
     
     // Auto-kira pada mula dan setup auto-save
     window.onload = function () {
-      tambahSoalan();
+      // Cuba muat data yang disimpan
+      if (!muatData()) {
+          // Jika tiada data, tambah soalan kosong
+          tambahSoalan();
+      }
       kiraStatistik();
       setupAutoSave();
-      
-      // Cuba muat data yang disimpan
-      if (muatData()) {
-          console.log('Data dimuat dari localStorage');
-      }
     };
   </script>
 </body>
