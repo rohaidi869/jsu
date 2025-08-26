@@ -848,7 +848,10 @@
       let totalMarkah = 0;
       let totalWajib = 0;
       let totalPilihan = 0;
-      let markahByLevel = { Rendah: 0, Sederhana: 0, Tinggi: 0 };
+      
+      // Objek untuk menyimpan markah mengikut tahap
+      let markahWajibByLevel = { Rendah: 0, Sederhana: 0, Tinggi: 0 };
+      let markahPilihanByLevel = { Rendah: 0, Sederhana: 0, Tinggi: 0 };
       
       // Jumlah soalan mengikut bentuk soalan
       let totalObjektif = 0;
@@ -864,7 +867,7 @@
         document.getElementById('jumlahSoalanPilihanDijawab').value = soalanPilihanDisediakan;
       }
       
-      // Kumpulkan data markah untuk soalan wajib
+      // Kumpulkan data markah untuk soalan wajib dan pilihan
       document.querySelectorAll("#senaraiSoalan .soalan-card").forEach(soalanCard => {
         const headerSelect = soalanCard.querySelector('.soalan-card-header select');
         const jenis = headerSelect.value;
@@ -894,61 +897,40 @@
           
           if (jenis === "Wajib") {
             totalWajib += bil;
-            markahByLevel[tahap] += jumlahMarkah;
+            markahWajibByLevel[tahap] += jumlahMarkah;
           } else {
             totalPilihan += bil;
-            // Markah pilihan tidak dimasukkan ke markahByLevel di sini, akan dikira selepas ini
+            markahPilihanByLevel[tahap] += jumlahMarkah;
           }
         });
       });
       
-      // Kira markah untuk soalan pilihan yang perlu dijawab
-      if (soalanPilihanDisediakan > 0 && soalanPilihanDijawab > 0) {
-        // Kumpulkan semua markah pilihan
-        let totalMarkahPilihanSemua = 0;
-        let totalSoalanPilihanSemua = 0;
-        let markahPilihanByLevel = { Rendah: 0, Sederhana: 0, Tinggi: 0 };
-        
-        document.querySelectorAll("#senaraiSoalan .soalan-card").forEach(soalanCard => {
-          const headerSelect = soalanCard.querySelector('.soalan-card-header select');
-          const jenis = headerSelect.value;
-          if (jenis === "Pilihan") {
-            soalanCard.querySelectorAll(".topik-card").forEach(card => {
-              const inputs = card.querySelectorAll(".topik-grid input, .topik-grid select");
-              const topik = inputs[0].value.trim();
-              const bil = parseInt(inputs[2].value) || 0;
-              const markahPerSoalan = parseInt(inputs[3].value) || 0;
-              const tahap = inputs[4].value;
-              if (!topik || bil <= 0 || markahPerSoalan <= 0) return;
-              const jumlahMarkah = bil * markahPerSoalan;
-              totalSoalanPilihanSemua += bil;
-              totalMarkahPilihanSemua += jumlahMarkah;
-              markahPilihanByLevel[tahap] += jumlahMarkah;
-            });
-          }
-        });
-        
-        // Kira markah untuk soalan pilihan yang perlu dijawab
-        if (totalSoalanPilihanSemua > 0) {
-          const markahPerSoalanPilihanDijawab = totalMarkahPilihanSemua / totalSoalanPilihanSemua * soalanPilihanDijawab;
-          
-          // Agihkan markah berdasarkan peratus tahap kesukaran
-          for (let level in markahPilihanByLevel) {
-            const peratus = markahPilihanByLevel[level] / totalMarkahPilihanSemua;
-            markahByLevel[level] += peratus * markahPerSoalanPilihanDijawab;
-          }
-        }
-      }
+      // Kira markah pilihan yang perlu dijawab berdasarkan formula
+      const nisbahPilihan = soalanPilihanDisediakan > 0 ? soalanPilihanDijawab / soalanPilihanDisediakan : 0;
       
-      // Kira jumlah markah akhir untuk pengiraan peratus
-      let totalMarkahAkhir = 0;
-      for (let level in markahByLevel) {
-        totalMarkahAkhir += markahByLevel[level];
-      }
+      const markahPilihanDijawabByLevel = {
+        Rendah: markahPilihanByLevel.Rendah * nisbahPilihan,
+        Sederhana: markahPilihanByLevel.Sederhana * nisbahPilihan,
+        Tinggi: markahPilihanByLevel.Tinggi * nisbahPilihan
+      };
+      
+      // Jumlah markah akhir untuk setiap tahap (wajib + pilihan yang dijawab)
+      const markahAkhirByLevel = {
+        Rendah: markahWajibByLevel.Rendah + markahPilihanDijawabByLevel.Rendah,
+        Sederhana: markahWajibByLevel.Sederhana + markahPilihanDijawabByLevel.Sederhana,
+        Tinggi: markahWajibByLevel.Tinggi + markahPilihanDijawabByLevel.Tinggi
+      };
+      
+      // Kira peratus berdasarkan markah akhir
+      const jumlahMarkahAkhir = markahAkhirByLevel.Rendah + markahAkhirByLevel.Sederhana + markahAkhirByLevel.Tinggi;
+      
+      const rendahPeratus = jumlahMarkahAkhir > 0 ? Math.round((markahAkhirByLevel.Rendah / jumlahMarkahAkhir) * 100) : 0;
+      const sederhanaPeratus = jumlahMarkahAkhir > 0 ? Math.round((markahAkhirByLevel.Sederhana / jumlahMarkahAkhir) * 100) : 0;
+      const tinggiPeratus = jumlahMarkahAkhir > 0 ? Math.round((markahAkhirByLevel.Tinggi / jumlahMarkahAkhir) * 100) : 0;
       
       // Papar total
       document.getElementById("totalSoalan").textContent = totalSoalan;
-      document.getElementById("totalMarkah").textContent = totalMarkah.toFixed(2);
+      document.getElementById("totalMarkah").textContent = jumlahMarkahAkhir.toFixed(2);
       document.getElementById("totalWajib").textContent = totalWajib;
       document.getElementById("totalPilihan").textContent = totalPilihan;
       
@@ -957,25 +939,30 @@
       document.getElementById("totalStruktur").textContent = totalStruktur;
       document.getElementById("totalEsei").textContent = totalEsei;
       
-      // Kira peratus berdasarkan markah yang perlu dijawab
-      const rendahPeratus = totalMarkahAkhir ? Math.round((markahByLevel.Rendah / totalMarkahAkhir) * 100) : 0;
-      const sederhanaPeratus = totalMarkahAkhir ? Math.round((markahByLevel.Sederhana / totalMarkahAkhir) * 100) : 0;
-      const tinggiPeratus = totalMarkahAkhir ? Math.round((markahByLevel.Tinggi / totalMarkahAkhir) * 100) : 0;
-      
       // Papar dalam input
       document.getElementById("rendahPeratus").value = rendahPeratus;
       document.getElementById("sederhanaPeratus").value = sederhanaPeratus;
       document.getElementById("tinggiPeratus").value = tinggiPeratus;
       
-      // Papar info
+      // Papar info distribusi markah
       const info = document.getElementById("kesukaranInfo");
-      if (totalMarkahAkhir === 0) {
+      if (jumlahMarkahAkhir === 0) {
         info.innerHTML = "Belum ada soalan ditambah atau tiada soalan wajib/pilihan yang perlu dijawab.";
       } else {
         info.innerHTML = `
-          🔹 Rendah: ${markahByLevel.Rendah.toFixed(2)} markah (${rendahPeratus}%)<br>
-          🔹 Sederhana: ${markahByLevel.Sederhana.toFixed(2)} markah (${sederhanaPeratus}%)<br>
-          🔹 Tinggi: ${markahByLevel.Tinggi.toFixed(2)} markah (${tinggiPeratus}%)
+          🔹 Rendah: ${markahAkhirByLevel.Rendah.toFixed(2)} markah (${rendahPeratus}%)<br>
+          🔹 Sederhana: ${markahAkhirByLevel.Sederhana.toFixed(2)} markah (${sederhanaPeratus}%)<br>
+          🔹 Tinggi: ${markahAkhirByLevel.Tinggi.toFixed(2)} markah (${tinggiPeratus}%)<br><br>
+          <strong>Detail Pengiraan:</strong><br>
+          - Wajib Rendah: ${markahWajibByLevel.Rendah.toFixed(2)} markah<br>
+          - Pilihan Rendah: ${markahPilihanByLevel.Rendah.toFixed(2)} markah × ${nisbahPilihan.toFixed(2)} = ${markahPilihanDijawabByLevel.Rendah.toFixed(2)} markah<br>
+          - Jumlah Rendah: ${markahAkhirByLevel.Rendah.toFixed(2)} markah<br><br>
+          - Wajib Sederhana: ${markahWajibByLevel.Sederhana.toFixed(2)} markah<br>
+          - Pilihan Sederhana: ${markahPilihanByLevel.Sederhana.toFixed(2)} markah × ${nisbahPilihan.toFixed(2)} = ${markahPilihanDijawabByLevel.Sederhana.toFixed(2)} markah<br>
+          - Jumlah Sederhana: ${markahAkhirByLevel.Sederhana.toFixed(2)} markah<br><br>
+          - Wajib Tinggi: ${markahWajibByLevel.Tinggi.toFixed(2)} markah<br>
+          - Pilihan Tinggi: ${markahPilihanByLevel.Tinggi.toFixed(2)} markah × ${nisbahPilihan.toFixed(2)} = ${markahPilihanDijawabByLevel.Tinggi.toFixed(2)} markah<br>
+          - Jumlah Tinggi: ${markahAkhirByLevel.Tinggi.toFixed(2)} markah
         `;
       }
     }
