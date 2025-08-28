@@ -232,6 +232,19 @@
       justify-content: space-between;
       flex-wrap: wrap;
     }
+    .totals-details {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+      width: 100%;
+      margin-top: 10px;
+    }
+    .totals-details > div {
+      background: #d4e6ff;
+      padding: 8px;
+      border-radius: 6px;
+      text-align: center;
+    }
     .kesukaran-display {
       margin-top: 15px;
       padding: 12px;
@@ -291,11 +304,14 @@
       header img {
         margin-bottom: 10px;
       }
-      .topik-grid, .totals-display, .pilihan-inputs {
+      .topik-grid, .totals-display, .pilihan-inputs, .totals-details {
         flex-direction: column;
       }
       .action-buttons {
         flex-direction: column;
+      }
+      .totals-details {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -374,6 +390,13 @@
           <div>Total Markah: <span id="totalMarkah">0</span></div>
           <div>Wajib: <span id="totalWajib">0</span></div>
           <div>Pilihan: <span id="totalPilihan">0</span></div>
+          
+          <!-- Paparan Jumlah Bentuk Soalan -->
+          <div class="totals-details">
+            <div>Objektif: <span id="totalObjektif">0</span></div>
+            <div>Struktur: <span id="totalStruktur">0</span></div>
+            <div>Esei: <span id="totalEsei">0</span></div>
+          </div>
         </div>
       </div>
       
@@ -425,6 +448,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script>
     const STORAGE_KEY = 'janaJSUDataWajibPilihan';
+    let soalanCounter = 0;
 
     // Fungsi untuk menyimpan data ke localStorage
     function simpanData() {
@@ -493,10 +517,12 @@
             // Kosongkan senarai soalan sedia ada
             document.getElementById('senaraiSoalan').innerHTML = '';
             
+            // Reset soalan counter
+            soalanCounter = 0;
+            
             // Muat semula soalan cards
             data.soalanCards.forEach((soalanData, soalanIndex) => {
                 // Tambah soalan card
-                window.soalanCounter = soalanIndex; // Set global counter
                 tambahSoalan();
                 
                 const soalanCards = document.querySelectorAll('#senaraiSoalan .soalan-card');
@@ -526,8 +552,8 @@
                 });
             });
             
-            window.soalanCounter = data.soalanCards.length; // Update global counter
             kiraStatistik(); // Kira semula statistik
+            updateSoalanNumbering(); // Kemas kini penomboran soalan
             return true;
         } catch (e) {
             console.error('Ralat memuat data dari localStorage:', e);
@@ -551,7 +577,7 @@
             
             // Kosongkan senarai soalan
             document.getElementById('senaraiSoalan').innerHTML = '';
-            window.soalanCounter = 0; // Reset global counter
+            soalanCounter = 0; // Reset global counter
             
             // Tambah satu soalan kosong
             tambahSoalan();
@@ -575,7 +601,6 @@
         document.getElementById('formatSoalan').addEventListener('change', simpanData);
     }
 
-    let soalanCounter = 0;
     function tambahSoalan() {
       soalanCounter++;
       const card = document.createElement('div');
@@ -601,6 +626,7 @@
           simpanData(); // Simpan data selepas menambah soalan baru
       }, 10);
     }
+
     function tambahTopikUntukSoalan(soalanId) {
       const containerId = `senaraiTopikSoalan${soalanId}`;
       const card = document.createElement('div');
@@ -654,6 +680,7 @@
           simpanData(); // Simpan data selepas menambah topik baru
       }, 10);
     }
+    
     function salinTopikTerakhirUntukSoalan(soalanId) {
         const containerId = `senaraiTopikSoalan${soalanId}`;
         const senaraiTopik = document.getElementById(containerId);
@@ -725,33 +752,74 @@
         kiraStatistik(); // Kira semula statistik
         simpanData(); // Simpan data selepas menyalin topik
     }
+    
     function hapusBarisIni(btn) {
       btn.closest('.topik-card').remove();
       kiraStatistik();
       simpanData(); // Simpan data selepas membuang card
     }
+    
     function hapusSoalan(btn) {
-      btn.closest('.soalan-card').remove();
+      const soalanCard = btn.closest('.soalan-card');
+      soalanCard.remove();
       kiraStatistik();
       updateSoalanNumbering();
       simpanData(); // Simpan data selepas membuang soalan
     }
+    
     function updateSoalanNumbering() {
       const cards = document.querySelectorAll("#senaraiSoalan .soalan-card");
+      soalanCounter = cards.length;
+      
       cards.forEach((card, index) => {
         const header = card.querySelector('.soalan-card-header h3');
         header.textContent = `Soalan ${index + 1}`;
+        
         // Update ID container dan fungsi onclick untuk butang
         const container = card.querySelector('[id^="senaraiTopikSoalan"]');
         if (container) {
-            container.id = `senaraiTopikSoalan${index + 1}`;
+            const oldId = container.id;
+            const newId = `senaraiTopikSoalan${index + 1}`;
+            container.id = newId;
+            
+            // Update onclick functions for buttons
+            const tambahBtn = card.querySelector('.topik-actions .btn-primary');
+            const salinBtn = card.querySelector('.topik-actions .btn-warning');
+            
+            if (tambahBtn) {
+                tambahBtn.setAttribute('onclick', `tambahTopikUntukSoalan(${index + 1})`);
+            }
+            if (salinBtn) {
+                salinBtn.setAttribute('onclick', `salinTopikTerakhirUntukSoalan(${index + 1})`);
+            }
+            
+            // Update any existing topic cards' parent reference
+            const topicCards = container.querySelectorAll('.topik-card');
+            topicCards.forEach(topicCard => {
+                const topicInputs = topicCard.querySelectorAll('input, select');
+                topicInputs.forEach(input => {
+                    const oldOnInput = input.getAttribute('oninput');
+                    if (oldOnInput) {
+                        input.setAttribute('oninput', oldOnInput.replace(oldId, newId));
+                    }
+                    
+                    const oldOnChange = input.getAttribute('onchange');
+                    if (oldOnChange) {
+                        input.setAttribute('onchange', oldOnChange.replace(oldId, newId));
+                    }
+                });
+                
+                const removeBtn = topicCard.querySelector('.remove-btn');
+                if (removeBtn) {
+                    const oldOnClick = removeBtn.getAttribute('onclick');
+                    if (oldOnClick) {
+                        removeBtn.setAttribute('onclick', oldOnClick.replace(oldId, newId));
+                    }
+                }
+            });
         }
-        const tambahBtn = card.querySelector('.topik-actions .btn-primary');
-        const salinBtn = card.querySelector('.topik-actions .btn-warning');
-        if (tambahBtn) tambahBtn.setAttribute('onclick', `tambahTopikUntukSoalan(${index + 1})`);
-        if (salinBtn) salinBtn.setAttribute('onclick', `salinTopikTerakhirUntukSoalan(${index + 1})`);
       });
-      window.soalanCounter = cards.length;
+      
       simpanData(); // Simpan data selepas mengemas kini penomboran
     }
     
@@ -780,7 +848,15 @@
       let totalMarkah = 0;
       let totalWajib = 0;
       let totalPilihan = 0;
-      let markahByLevel = { Rendah: 0, Sederhana: 0, Tinggi: 0 };
+      
+      // Objek untuk menyimpan markah mengikut tahap
+      let markahWajibByLevel = { Rendah: 0, Sederhana: 0, Tinggi: 0 };
+      let markahPilihanByLevel = { Rendah: 0, Sederhana: 0, Tinggi: 0 };
+      
+      // Jumlah soalan mengikut bentuk soalan
+      let totalObjektif = 0;
+      let totalStruktur = 0;
+      let totalEsei = 0;
       
       // Dapatkan input soalan pilihan
       const soalanPilihanDisediakan = parseInt(document.getElementById('jumlahSoalanPilihanDisediakan').value) || 0;
@@ -791,111 +867,102 @@
         document.getElementById('jumlahSoalanPilihanDijawab').value = soalanPilihanDisediakan;
       }
       
-      // Kumpulkan data markah untuk soalan wajib
+      // Kumpulkan data markah untuk soalan wajib dan pilihan
       document.querySelectorAll("#senaraiSoalan .soalan-card").forEach(soalanCard => {
         const headerSelect = soalanCard.querySelector('.soalan-card-header select');
         const jenis = headerSelect.value;
-        if (jenis === "Wajib") {
-          soalanCard.querySelectorAll(".topik-card").forEach(card => {
-            const inputs = card.querySelectorAll(".topik-grid input, .topik-grid select");
-            const topik = inputs[0].value.trim();
-            const bil = parseInt(inputs[2].value) || 0;
-            const markahPerSoalan = parseInt(inputs[3].value) || 0;
-            const tahap = inputs[4].value;
-            if (!topik || bil <= 0 || markahPerSoalan <= 0) return;
-            const jumlahMarkah = bil * markahPerSoalan;
-            totalSoalan += bil;
-            totalMarkah += jumlahMarkah;
-            totalWajib += bil;
-            markahByLevel[tahap] += jumlahMarkah;
-          });
-        } else {
-          // Kumpulkan data markah untuk soalan pilihan
-          soalanCard.querySelectorAll(".topik-card").forEach(card => {
-            const inputs = card.querySelectorAll(".topik-grid input, .topik-grid select");
-            const topik = inputs[0].value.trim();
-            const bil = parseInt(inputs[2].value) || 0;
-            const markahPerSoalan = parseInt(inputs[3].value) || 0;
-            const tahap = inputs[4].value;
-            if (!topik || bil <= 0 || markahPerSoalan <= 0) return;
-            const jumlahMarkah = bil * markahPerSoalan;
-            totalSoalan += bil;
-            totalMarkah += jumlahMarkah;
-            totalPilihan += bil;
-            // Markah pilihan tidak dimasukkan ke markahByLevel di sini, akan dikira selepas ini
-          });
-        }
-      });
-      
-      // Kira markah untuk soalan pilihan yang perlu dijawab
-      if (soalanPilihanDisediakan > 0 && soalanPilihanDijawab > 0) {
-        // Kumpulkan semua markah pilihan
-        let totalMarkahPilihanSemua = 0;
-        let totalSoalanPilihanSemua = 0;
-        let markahPilihanByLevel = { Rendah: 0, Sederhana: 0, Tinggi: 0 };
         
-        document.querySelectorAll("#senaraiSoalan .soalan-card").forEach(soalanCard => {
-          const headerSelect = soalanCard.querySelector('.soalan-card-header select');
-          const jenis = headerSelect.value;
-          if (jenis === "Pilihan") {
-            soalanCard.querySelectorAll(".topik-card").forEach(card => {
-              const inputs = card.querySelectorAll(".topik-grid input, .topik-grid select");
-              const topik = inputs[0].value.trim();
-              const bil = parseInt(inputs[2].value) || 0;
-              const markahPerSoalan = parseInt(inputs[3].value) || 0;
-              const tahap = inputs[4].value;
-              if (!topik || bil <= 0 || markahPerSoalan <= 0) return;
-              const jumlahMarkah = bil * markahPerSoalan;
-              totalSoalanPilihanSemua += bil;
-              totalMarkahPilihanSemua += jumlahMarkah;
-              markahPilihanByLevel[tahap] += jumlahMarkah;
-            });
+        soalanCard.querySelectorAll(".topik-card").forEach(card => {
+          const inputs = card.querySelectorAll(".topik-grid input, .topik-grid select");
+          const topik = inputs[0].value.trim();
+          const bentuk = inputs[1].value;
+          const bil = parseInt(inputs[2].value) || 0;
+          const markahPerSoalan = parseInt(inputs[3].value) || 0;
+          const tahap = inputs[4].value;
+          
+          if (!topik || bil <= 0 || markahPerSoalan <= 0) return;
+          
+          const jumlahMarkah = bil * markahPerSoalan;
+          totalSoalan += bil;
+          totalMarkah += jumlahMarkah;
+          
+          // Kira jumlah soalan mengikut bentuk soalan
+          if (bentuk === "Objektif") {
+            totalObjektif += bil;
+          } else if (bentuk === "Struktur") {
+            totalStruktur += bil;
+          } else if (bentuk === "Esei") {
+            totalEsei += bil;
+          }
+          
+          if (jenis === "Wajib") {
+            totalWajib += bil;
+            markahWajibByLevel[tahap] += jumlahMarkah;
+          } else {
+            totalPilihan += bil;
+            markahPilihanByLevel[tahap] += jumlahMarkah;
           }
         });
-        
-        // Kira markah untuk soalan pilihan yang perlu dijawab
-        if (totalSoalanPilihanSemua > 0) {
-          const markahPerSoalanPilihanDijawab = totalMarkahPilihanSemua / totalSoalanPilihanSemua * soalanPilihanDijawab;
-          
-          // Agihkan markah berdasarkan peratus tahap kesukaran
-          for (let level in markahPilihanByLevel) {
-            const peratus = markahPilihanByLevel[level] / totalMarkahPilihanSemua;
-            markahByLevel[level] += peratus * markahPerSoalanPilihanDijawab;
-          }
-        }
-      }
+      });
       
-      // Kira jumlah markah akhir untuk pengiraan peratus
-      let totalMarkahAkhir = 0;
-      for (let level in markahByLevel) {
-        totalMarkahAkhir += markahByLevel[level];
-      }
+      // Kira markah pilihan yang perlu dijawab berdasarkan formula
+      const nisbahPilihan = soalanPilihanDisediakan > 0 ? soalanPilihanDijawab / soalanPilihanDisediakan : 0;
+      
+      const markahPilihanDijawabByLevel = {
+        Rendah: markahPilihanByLevel.Rendah * nisbahPilihan,
+        Sederhana: markahPilihanByLevel.Sederhana * nisbahPilihan,
+        Tinggi: markahPilihanByLevel.Tinggi * nisbahPilihan
+      };
+      
+      // Jumlah markah akhir untuk setiap tahap (wajib + pilihan yang dijawab)
+      const markahAkhirByLevel = {
+        Rendah: markahWajibByLevel.Rendah + markahPilihanDijawabByLevel.Rendah,
+        Sederhana: markahWajibByLevel.Sederhana + markahPilihanDijawabByLevel.Sederhana,
+        Tinggi: markahWajibByLevel.Tinggi + markahPilihanDijawabByLevel.Tinggi
+      };
+      
+      // Kira peratus berdasarkan markah akhir
+      const jumlahMarkahAkhir = markahAkhirByLevel.Rendah + markahAkhirByLevel.Sederhana + markahAkhirByLevel.Tinggi;
+      
+      const rendahPeratus = jumlahMarkahAkhir > 0 ? Math.round((markahAkhirByLevel.Rendah / jumlahMarkahAkhir) * 100) : 0;
+      const sederhanaPeratus = jumlahMarkahAkhir > 0 ? Math.round((markahAkhirByLevel.Sederhana / jumlahMarkahAkhir) * 100) : 0;
+      const tinggiPeratus = jumlahMarkahAkhir > 0 ? Math.round((markahAkhirByLevel.Tinggi / jumlahMarkahAkhir) * 100) : 0;
       
       // Papar total
       document.getElementById("totalSoalan").textContent = totalSoalan;
-      document.getElementById("totalMarkah").textContent = totalMarkah.toFixed(2);
+      document.getElementById("totalMarkah").textContent = jumlahMarkahAkhir.toFixed(2);
       document.getElementById("totalWajib").textContent = totalWajib;
       document.getElementById("totalPilihan").textContent = totalPilihan;
       
-      // Kira peratus berdasarkan markah yang perlu dijawab
-      const rendahPeratus = totalMarkahAkhir ? Math.round((markahByLevel.Rendah / totalMarkahAkhir) * 100) : 0;
-      const sederhanaPeratus = totalMarkahAkhir ? Math.round((markahByLevel.Sederhana / totalMarkahAkhir) * 100) : 0;
-      const tinggiPeratus = totalMarkahAkhir ? Math.round((markahByLevel.Tinggi / totalMarkahAkhir) * 100) : 0;
+      // Papar jumlah bentuk soalan
+      document.getElementById("totalObjektif").textContent = totalObjektif;
+      document.getElementById("totalStruktur").textContent = totalStruktur;
+      document.getElementById("totalEsei").textContent = totalEsei;
       
       // Papar dalam input
       document.getElementById("rendahPeratus").value = rendahPeratus;
       document.getElementById("sederhanaPeratus").value = sederhanaPeratus;
       document.getElementById("tinggiPeratus").value = tinggiPeratus;
       
-      // Papar info
+      // Papar info distribusi markah
       const info = document.getElementById("kesukaranInfo");
-      if (totalMarkahAkhir === 0) {
+      if (jumlahMarkahAkhir === 0) {
         info.innerHTML = "Belum ada soalan ditambah atau tiada soalan wajib/pilihan yang perlu dijawab.";
       } else {
         info.innerHTML = `
-          🔹 Rendah: ${markahByLevel.Rendah.toFixed(2)} markah (${rendahPeratus}%)<br>
-          🔹 Sederhana: ${markahByLevel.Sederhana.toFixed(2)} markah (${sederhanaPeratus}%)<br>
-          🔹 Tinggi: ${markahByLevel.Tinggi.toFixed(2)} markah (${tinggiPeratus}%)
+          🔹 Rendah: ${markahAkhirByLevel.Rendah.toFixed(2)} markah (${rendahPeratus}%)<br>
+          🔹 Sederhana: ${markahAkhirByLevel.Sederhana.toFixed(2)} markah (${sederhanaPeratus}%)<br>
+          🔹 Tinggi: ${markahAkhirByLevel.Tinggi.toFixed(2)} markah (${tinggiPeratus}%)<br><br>
+          <strong>Detail Pengiraan:</strong><br>
+          - Wajib Rendah: ${markahWajibByLevel.Rendah.toFixed(2)} markah<br>
+          - Pilihan Rendah: ${markahPilihanByLevel.Rendah.toFixed(2)} markah × ${nisbahPilihan.toFixed(2)} = ${markahPilihanDijawabByLevel.Rendah.toFixed(2)} markah<br>
+          - Jumlah Rendah: ${markahAkhirByLevel.Rendah.toFixed(2)} markah<br><br>
+          - Wajib Sederhana: ${markahWajibByLevel.Sederhana.toFixed(2)} markah<br>
+          - Pilihan Sederhana: ${markahPilihanByLevel.Sederhana.toFixed(2)} markah × ${nisbahPilihan.toFixed(2)} = ${markahPilihanDijawabByLevel.Sederhana.toFixed(2)} markah<br>
+          - Jumlah Sederhana: ${markahAkhirByLevel.Sederhana.toFixed(2)} markah<br><br>
+          - Wajib Tinggi: ${markahWajibByLevel.Tinggi.toFixed(2)} markah<br>
+          - Pilihan Tinggi: ${markahPilihanByLevel.Tinggi.toFixed(2)} markah × ${nisbahPilihan.toFixed(2)} = ${markahPilihanDijawabByLevel.Tinggi.toFixed(2)} markah<br>
+          - Jumlah Tinggi: ${markahAkhirByLevel.Tinggi.toFixed(2)} markah
         `;
       }
     }
@@ -1015,9 +1082,24 @@
       let totalMarkah = 0;
       let totalWajib = 0;
       let totalPilihan = 0;
+      // Jumlah soalan mengikut bentuk soalan
+      let totalObjektif = 0;
+      let totalStruktur = 0;
+      let totalEsei = 0;
+      
       dataJSU.forEach(item => {
         totalSoalan += item.bil;
         totalMarkah += item.jumlah;
+        
+        // Kira jumlah soalan mengikut bentuk soalan
+        if (item.bentuk === "Objektif") {
+          totalObjektif += item.bil;
+        } else if (item.bentuk === "Struktur") {
+          totalStruktur += item.bil;
+        } else if (item.bentuk === "Esei") {
+          totalEsei += item.bil;
+        }
+        
         if (item.jenis === "Wajib") {
           totalWajib += item.bil;
         } else {
@@ -1054,6 +1136,11 @@
         <p><strong>Ringkasan:</strong> 
           Wajib: ${totalWajib} soalan, 
           Pilihan: ${totalPilihan} soalan
+        </p>
+        <p><strong>Jumlah Soalan Mengikut Bentuk:</strong> 
+          Objektif: ${totalObjektif}, 
+          Struktur: ${totalStruktur}, 
+          Esei: ${totalEsei}
         </p>
       `;
       // Ambil peratus berdasarkan markah
@@ -1102,6 +1189,7 @@
       `;
       document.getElementById('output').innerHTML = output;
     }
+    
     function muatTurunWord() {
       const output = document.getElementById('output').innerHTML;
       const html = `
@@ -1124,15 +1212,17 @@
       const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = `JSU_${kodKursus.value || 'Dokumen'}.doc`;
+      link.download = `JSU_${document.getElementById('kodKursus').value || 'Dokumen'}.doc`;
       link.click();
     }
+    
     function muatTurunExcel() {
       const table = document.querySelector("#output table");
       if (!table) return alert("Tiada jadual untuk dimuat turun.");
       const wb = XLSX.utils.table_to_book(table, { sheet: "Soalan" });
-      XLSX.writeFile(wb, `JSU_${kodKursus.value || 'Dokumen'}.xlsx`);
+      XLSX.writeFile(wb, `JSU_${document.getElementById('kodKursus').value || 'Dokumen'}.xlsx`);
     }
+    
     function cetakJSU() {
       const output = document.getElementById('output').innerHTML;
       const win = window.open('', '', 'width=900,height=700');
@@ -1160,16 +1250,16 @@
       win.print();
       win.close();
     }
+    
     // Auto-kira pada mula dan setup auto-save
     window.onload = function () {
-      tambahSoalan();
+      // Cuba muat data yang disimpan
+      if (!muatData()) {
+          // Jika tiada data, tambah soalan kosong
+          tambahSoalan();
+      }
       kiraStatistik();
       setupAutoSave();
-      
-      // Cuba muat data yang disimpan
-      if (muatData()) {
-          console.log('Data dimuat dari localStorage');
-      }
     };
   </script>
 </body>
