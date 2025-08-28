@@ -314,6 +314,32 @@
         grid-template-columns: 1fr;
       }
     }
+    /* Styles untuk cetakan */
+    @media print {
+      body, .container {
+        margin: 0;
+        padding: 0;
+        background: white;
+        width: 100%;
+        box-shadow: none;
+      }
+      header, .content {
+        padding: 15px;
+      }
+      .action-buttons, .reset-section, .btn {
+        display: none !important;
+      }
+      .soalan-card, .topik-card {
+        box-shadow: none;
+        border: 1px solid #ddd;
+      }
+      h2 {
+        page-break-after: avoid;
+      }
+      .soalan-card {
+        page-break-inside: avoid;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1128,7 +1154,7 @@
           <td>-</td>
           <td>-</td>
           <td>${totalMarkah}</td>
-        </tr>
+          </tr>
       </table>
       `;
       // Papar ringkasan tambahan
@@ -1224,31 +1250,123 @@
     }
     
     function cetakJSU() {
-      const output = document.getElementById('output').innerHTML;
-      const win = window.open('', '', 'width=900,height=700');
-      win.document.write(`
+      // Dapatkan output HTML
+      const outputContent = document.getElementById('output').innerHTML;
+      
+      // Buka jendela baru untuk cetak
+      const printWindow = window.open('', '_blank', 'width=1000,height=700');
+      
+      // Tulis konten ke jendela cetak
+      printWindow.document.write(`
+        <!DOCTYPE html>
         <html>
-          <head>
-            <title>JSU - Cetak</title>
-            <style>
-              body { font-family: Arial, sans-serif; padding: 30px; }
-              table { border-collapse: collapse; width: 100%; }
-              th, td { border: 1px solid #000; padding: 8px; text-align: center; }
-              th { background-color: #e9ecef; }
-              .signature { margin-top: 40px; display: flex; justify-content: space-between; }
-              .signature div { width: 45%; text-align: center; }
-              .signature .line { border-bottom: 1px solid #000; padding: 5px 0; font-style: italic; }
-              .wajib-badge { background-color: #28a745; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
-              .pilihan-badge { background-color: #ffc107; color: #212529; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
-            </style>
-          </head>
-          <body>${output}</body>
+        <head>
+          <title>Cetak JSU - ${document.getElementById('namaKursus').value || 'Dokumen'}</title>
+          <meta charset="UTF-8">
+          <style>
+            body {
+              font-family: 'Inter', 'Segoe UI', sans-serif;
+              color: #000;
+              line-height: 1.5;
+              padding: 30px;
+              margin: 0;
+            }
+            .header {
+              text-align: center;
+              margin-bottom: 25px;
+              border-bottom: 2px solid #2c7be5;
+              padding-bottom: 15px;
+            }
+            .header img {
+              max-width: 100px;
+              height: auto;
+            }
+            .header p {
+              font-size: 14px;
+              margin: 10px 0;
+              line-height: 1.4;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin: 15px 0;
+              font-size: 13px;
+            }
+            th, td {
+              border: 1px solid #000;
+              padding: 8px;
+              text-align: center;
+            }
+            th {
+              background-color: #f1f3f6;
+              font-weight: bold;
+            }
+            .wajib-badge {
+              background-color: #28a745;
+              color: white;
+              padding: 3px 6px;
+              border-radius: 3px;
+              font-size: 11px;
+              font-weight: bold;
+            }
+            .pilihan-badge {
+              background-color: #ffc107;
+              color: #212529;
+              padding: 3px 6px;
+              border-radius: 3px;
+              font-size: 11px;
+              font-weight: bold;
+            }
+            .signature {
+              margin-top: 50px;
+              display: flex;
+              justify-content: space-between;
+            }
+            .signature-box {
+              width: 45%;
+              text-align: center;
+            }
+            .signature-line {
+              border-bottom: 1px solid #000;
+              padding: 5px 0;
+              margin: 40px 0 10px;
+              font-style: italic;
+            }
+            @media print {
+              body {
+                padding: 15px;
+              }
+              .no-print {
+                display: none;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRT2c9MkwQOnCwNRy5xBVmuvdK_nSQmmWGcVDRKIWB-k8pWfI4zjUJVfYcLsr4NXpc99FM&usqp=CAU" 
+                 alt="Logo KIAS" />
+            <p>
+              KOLEJ UNIVERSITI ISLAM ANTARABANGSA SULTAN ISMAIL PETRA (KIAS)<br>
+              SULTAN ISMAIL PETRA INTERNATIONAL ISLAMIC UNIVERSITY COLLEGE<br>
+              KM 12, Jalan Kuala Krai, Peti Surat 68, Nilam Puri, 15730 Kota Bharu, Kelantan Darulnaim.<br>
+              Tel: 609 - 712 9386 / 712 9387 Fax: 609 - 712 9444 / 712 6100<br>
+              Email: admin@kias.edu.my Website: www.kias.edu.my IPTS: DKU045(D)
+            </p>
+          </div>
+          ${outputContent}
+        </body>
         </html>
       `);
-      win.document.close();
-      win.focus();
-      win.print();
-      win.close();
+      
+      printWindow.document.close();
+      
+      // Tunggu konten dimuat sepenuhnya sebelum mencetak
+      printWindow.onload = function() {
+        printWindow.focus();
+        printWindow.print();
+        // Tidak langsung menutup jendela agar pengguna bisa memilih opsi printer
+      };
     }
     
     // Auto-kira pada mula dan setup auto-save
